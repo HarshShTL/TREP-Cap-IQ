@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "Bash(find 'c:/Users/hshar/Timberline Dropbox/3rd Party Access/RealVal - TL Shared Drive/AI Trained Models/TREP Cap IQ/src/app' -type f -name *.tsx -o -name *.ts)",
+      "Bash(ls -la \"c:/Users/hshar/Timberline Dropbox/3rd Party Access/RealVal - TL Shared Drive/AI Trained Models/TREP Cap IQ/.env\"*)"
+    ]
+  }
+}
