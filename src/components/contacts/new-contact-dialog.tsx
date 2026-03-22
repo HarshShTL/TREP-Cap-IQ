@@ -30,6 +30,8 @@ import {
   ASSET_CLASSES,
   REGIONS,
   INVESTMENT_STRATEGIES,
+  RELATIONSHIP_TYPES,
+  DATABASE_SOURCES,
 } from "@/lib/constants";
 
 const schema = z.object({
@@ -250,15 +252,12 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
                   onChange={(v) => setValue("investment_strategy", v)}
                   options={INVESTMENT_STRATEGIES}
                 />
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Relationship Notes</label>
-                  <Textarea
-                    {...register("relationship")}
-                    rows={3}
-                    className="resize-none"
-                    placeholder="How did we meet? Key relationship context..."
-                  />
-                </div>
+                <SelectField
+                  label="Relationship"
+                  value={watch("relationship") ?? ""}
+                  onChange={(v) => setValue("relationship", v)}
+                  options={RELATIONSHIP_TYPES}
+                />
                 <div className="space-y-1">
                   <label className="text-sm font-medium">Next Steps</label>
                   <Textarea
@@ -310,10 +309,12 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
               </TabsContent>
 
               <TabsContent value="source" className="mt-0 space-y-3">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Database Source</label>
-                  <Input {...register("database_source")} placeholder="Referral, LinkedIn, etc." />
-                </div>
+                <SelectField
+                  label="Database Source"
+                  value={watch("database_source") ?? ""}
+                  onChange={(v) => setValue("database_source", v)}
+                  options={DATABASE_SOURCES}
+                />
                 <div className="space-y-1">
                   <label className="text-sm font-medium">Website</label>
                   <Input {...register("website")} placeholder="https://example.com" />

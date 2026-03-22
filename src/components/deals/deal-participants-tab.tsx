@@ -78,8 +78,8 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
   const [results, setResults] = React.useState<Contact[]>([]);
   const [searching, setSearching] = React.useState(false);
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
-  const [role, setRole] = React.useState("Investor");
-  const [status, setStatus] = React.useState("Active");
+  const [role, setRole] = React.useState("Lead Investor");
+  const [status, setStatus] = React.useState("Introduced");
   const debouncedSearch = useDebounce(search, 300);
 
   React.useEffect(() => {
@@ -131,8 +131,8 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
     onOpenChange(false);
     setSearch("");
     setSelectedContact(null);
-    setRole("Investor");
-    setStatus("Active");
+    setRole("Lead Investor");
+    setStatus("Introduced");
   };
 
   return (

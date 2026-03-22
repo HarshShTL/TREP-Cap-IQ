@@ -10,6 +10,11 @@ import {
   ASSET_CLASSES,
   REGIONS,
   CAPITAL_TYPES,
+  FAMILY_OFFICE_TYPES,
+  INSTITUTIONAL_TYPES,
+  RETAIL_TYPES,
+  INDIRECT_TYPES,
+  OWNERSHIP_TYPES,
   INVESTMENT_STRATEGIES,
   formatCurrency,
 } from "@/lib/constants";
@@ -57,6 +62,8 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
 
       <Separator />
 
+      {/* Core */}
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Core Information</div>
       <InlineEditField
         label="Company Name"
         value={company.name}
@@ -82,6 +89,17 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         type="text"
         onSave={save("website")}
       />
+
+      <Separator />
+
+      {/* Location */}
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Headquarters</div>
+      <InlineEditField
+        label="HQ Address"
+        value={company.hq_address ?? ""}
+        type="text"
+        onSave={save("hq_address")}
+      />
       <InlineEditField
         label="HQ City"
         value={company.hq_city ?? ""}
@@ -100,6 +118,11 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         type="text"
         onSave={save("hq_country")}
       />
+
+      <Separator />
+
+      {/* Investor Profile */}
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Investor Profile</div>
       <InlineEditField
         label="Capital Type"
         value={company.capital_type ?? ""}
@@ -108,11 +131,46 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         onSave={save("capital_type")}
       />
       <InlineEditField
-        label="Asset Class"
-        value={company.asset_class ?? ""}
+        label="Family Office"
+        value={company.family_office ?? ""}
         type="select"
-        options={[...ASSET_CLASSES]}
-        onSave={save("asset_class")}
+        options={[...FAMILY_OFFICE_TYPES]}
+        onSave={save("family_office")}
+      />
+      <InlineEditField
+        label="Institutional"
+        value={company.institutional ?? ""}
+        type="select"
+        options={[...INSTITUTIONAL_TYPES]}
+        onSave={save("institutional")}
+      />
+      <InlineEditField
+        label="Retail"
+        value={company.retail ?? ""}
+        type="select"
+        options={[...RETAIL_TYPES]}
+        onSave={save("retail")}
+      />
+      <InlineEditField
+        label="Indirect"
+        value={company.indirect ?? ""}
+        type="select"
+        options={[...INDIRECT_TYPES]}
+        onSave={save("indirect")}
+      />
+      <InlineEditField
+        label="Ownership"
+        value={company.ownership ?? ""}
+        type="select"
+        options={[...OWNERSHIP_TYPES]}
+        onSave={save("ownership")}
+      />
+      <InlineEditField
+        label="Investment Strategy"
+        value={company.investment_strategy ?? ""}
+        type="select"
+        options={[...INVESTMENT_STRATEGIES]}
+        onSave={save("investment_strategy")}
       />
       <InlineEditField
         label="Region"
@@ -122,11 +180,11 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         onSave={save("region")}
       />
       <InlineEditField
-        label="Investment Strategy"
-        value={company.investment_strategy ?? ""}
+        label="Asset Class"
+        value={company.asset_class ?? ""}
         type="select"
-        options={[...INVESTMENT_STRATEGIES]}
-        onSave={save("investment_strategy")}
+        options={[...ASSET_CLASSES]}
+        onSave={save("asset_class")}
       />
       <InlineEditField
         label="AUM ($)"
@@ -137,6 +195,9 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         }}
         formatDisplay={(v) => (v ? formatCurrency(Number(v)) : "")}
       />
+
+      <Separator />
+
       <InlineEditField
         label="Notes"
         value={company.notes ?? ""}
@@ -146,7 +207,8 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
 
       {customFields.length > 0 && (
         <>
-          <div className="border-t pt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <Separator />
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Custom Fields
           </div>
           {customFields.map((field) => (

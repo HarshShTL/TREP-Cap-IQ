@@ -11,7 +11,7 @@ export type DealStage =
 
 export type Priority = "High" | "Medium" | "Low";
 
-export type DealType = "Development" | "Acquisition" | "Other";
+export type DealType = "Development" | "Acquisition";
 
 export type ActivityType =
   | "Call"
@@ -25,28 +25,21 @@ export type ActivityType =
 export type EntityType = "deal" | "contact" | "company";
 
 export type LeadStatus =
-  | "New"
-  | "Open"
-  | "In Progress"
-  | "Qualified"
-  | "Unqualified"
-  | "Attempted"
-  | "Connected"
-  | "Bad Timing"
-  | "Nurture"
-  | "Do Not Contact";
+  | "Need to Call"
+  | "Left VM"
+  | "Call Scheduled"
+  | "Had Call"
+  | "Tag to Deal"
+  | "Hold off for now";
 
 export type CapitalType =
-  | "Equity"
-  | "Debt"
-  | "Preferred Equity"
-  | "Mezzanine"
-  | "JV Equity"
-  | "Bridge"
-  | "Construction"
-  | "Permanent"
-  | "CMBS"
-  | "Other";
+  | "Senior Debt"
+  | "GP Equity"
+  | "LP - Large"
+  | "LP - Mid"
+  | "Subordinated Debt/Pref Equity"
+  | "Senior Debt - TX Banks"
+  | "LP - Small";
 
 export type FieldType = "text" | "number" | "date" | "select" | "boolean" | "textarea";
 
