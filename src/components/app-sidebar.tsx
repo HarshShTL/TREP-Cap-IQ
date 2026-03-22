@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  Upload,
   Users,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const mainNavItems = [
 ] as const;
 
 const bottomNavItems = [
+  { href: "/import", label: "Import", icon: Upload },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -63,17 +65,25 @@ export function AppSidebar({
       )}
     >
       {/* Logo */}
-      <div className="border-b border-sidebar-border/60 px-5 py-5">
-        <Link href="/" className="block" onClick={onNavigate}>
-          <span className="text-base font-bold tracking-tight text-sidebar-foreground">
-            TREP Cap IQ
-          </span>
-          <p className="mt-0.5 text-xs text-sidebar-foreground/50">Investor Relations</p>
+      <div className="border-b border-sidebar-border/60 px-4 py-4">
+        <Link href="/" className="flex items-center gap-3" onClick={onNavigate}>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-xs font-bold text-slate-900 shadow-sm">
+            TC
+          </div>
+          <div className="min-w-0">
+            <span className="block text-sm font-bold tracking-tight text-sidebar-foreground">
+              TREP Cap IQ
+            </span>
+            <p className="text-[10px] text-sidebar-foreground/45 leading-tight">Investor Relations</p>
+          </div>
         </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      {/* Main Nav */}
+      <nav className="flex flex-1 flex-col gap-0.5 px-2 py-3">
+        <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+          Menu
+        </p>
         {mainNavItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
@@ -82,20 +92,32 @@ export function AppSidebar({
               href={href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-amber-500/20 text-amber-400 border-l-2 border-amber-400 pl-[10px]"
-                  : "text-sidebar-foreground/70 hover:bg-white/5 hover:text-sidebar-foreground",
+                  ? "bg-amber-500/15 text-amber-400"
+                  : "text-sidebar-foreground/60 hover:bg-white/5 hover:text-sidebar-foreground",
               )}
             >
-              <Icon className="size-[18px] shrink-0" aria-hidden />
+              <Icon
+                className={cn(
+                  "size-[17px] shrink-0 transition-colors",
+                  active ? "text-amber-400" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/80",
+                )}
+                aria-hidden
+              />
               {label}
+              {active && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" />
+              )}
             </Link>
           );
         })}
 
-        <hr className="border-sidebar-border/40 my-2" />
+        <div className="my-2 border-t border-sidebar-border/30" />
 
+        <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
+          Tools
+        </p>
         {bottomNavItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
@@ -104,13 +126,19 @@ export function AppSidebar({
               href={href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-amber-500/20 text-amber-400 border-l-2 border-amber-400 pl-[10px]"
-                  : "text-sidebar-foreground/70 hover:bg-white/5 hover:text-sidebar-foreground",
+                  ? "bg-amber-500/15 text-amber-400"
+                  : "text-sidebar-foreground/60 hover:bg-white/5 hover:text-sidebar-foreground",
               )}
             >
-              <Icon className="size-[18px] shrink-0" aria-hidden />
+              <Icon
+                className={cn(
+                  "size-[17px] shrink-0 transition-colors",
+                  active ? "text-amber-400" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/80",
+                )}
+                aria-hidden
+              />
               {label}
             </Link>
           );
@@ -118,39 +146,42 @@ export function AppSidebar({
       </nav>
 
       {/* User section */}
-      <div className="flex items-center gap-2 px-3 py-3 border-t border-sidebar-border/40 mt-auto">
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-xs font-semibold text-amber-400 shrink-0">
-          {getInitials(profile?.full_name)}
-        </div>
+      <div className="border-t border-sidebar-border/40 px-3 py-3">
+        <div className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
+          {/* Avatar */}
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500/40 to-amber-600/20 text-xs font-semibold text-amber-300">
+            {getInitials(profile?.full_name)}
+          </div>
 
-        {/* Name + Role */}
-        <div className="flex-1 min-w-0">
-          <span className="block text-sm font-medium text-sidebar-foreground truncate">
-            {profile?.full_name ?? "Loading…"}
-          </span>
-          {profile?.role && (
-            <span className={cn(
-              "inline-flex items-center rounded-full px-1.5 py-0 text-[10px] font-medium mt-0.5",
-              profile.role === "super_admin"
-                ? "bg-amber-500/20 text-amber-400"
-                : profile.role === "read_only"
-                  ? "bg-slate-500/20 text-slate-400"
-                  : "bg-sidebar-foreground/10 text-sidebar-foreground/60",
-            )}>
-              {profile.role === "super_admin" ? "Super Admin" : profile.role === "read_only" ? "Read Only" : "User"}
+          {/* Name + Role */}
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-semibold text-sidebar-foreground truncate leading-tight">
+              {profile?.full_name ?? "Loading…"}
             </span>
-          )}
-        </div>
+            {profile?.role && (
+              <span className={cn(
+                "inline-flex items-center rounded px-1 text-[9px] font-medium mt-0.5 leading-4",
+                profile.role === "super_admin"
+                  ? "bg-amber-500/20 text-amber-400"
+                  : profile.role === "read_only"
+                    ? "bg-slate-500/20 text-slate-400"
+                    : "bg-sidebar-foreground/10 text-sidebar-foreground/50",
+              )}>
+                {profile.role === "super_admin" ? "Admin" : profile.role === "read_only" ? "Read Only" : "Member"}
+              </span>
+            )}
+          </div>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          aria-label="Sign out"
-          className="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-white/5 transition-colors"
-        >
-          <LogOut className="size-3.5" />
-        </button>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            aria-label="Sign out"
+            title="Sign out"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/40 transition-colors hover:bg-white/8 hover:text-sidebar-foreground/80"
+          >
+            <LogOut className="size-3.5" />
+          </button>
+        </div>
       </div>
     </aside>
   );
