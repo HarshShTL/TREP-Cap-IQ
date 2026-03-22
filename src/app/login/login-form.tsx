@@ -50,8 +50,7 @@ export function LoginForm() {
     }
 
     toast.success("Signed in");
-    router.replace(next.startsWith("/") ? next : "/");
-    router.refresh();
+    window.location.href = next.startsWith("/") ? next : "/";
   }
 
   const missingEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
