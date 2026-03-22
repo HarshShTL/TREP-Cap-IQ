@@ -9,7 +9,8 @@ import {
 } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DealCard } from "./deal-card";
-import { formatCurrency } from "@/lib/constants";
+import { formatCurrency, STAGE_DOT_COLORS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { useUpdateDealStage } from "@/hooks/use-deals";
 import type { Deal } from "@/types";
 
@@ -71,7 +72,7 @@ export function DealsBoardView({
           const stageDeals = stageMap.get(stage) ?? [];
           const totalAmount = stageDeals.reduce(
             (sum, d) => sum + (d.amount ?? 0),
-            0
+            0,
           );
 
           return (
@@ -80,13 +81,24 @@ export function DealsBoardView({
               className="flex w-[280px] shrink-0 flex-col rounded-xl bg-muted/30 border border-border/50 p-2"
             >
               {/* Column header */}
-              <div className="mb-2 flex items-center justify-between px-2 py-1">
+              <div className="mb-2 flex items-center gap-2 px-2 py-1.5">
+                <span
+                  className={cn(
+                    "size-2.5 shrink-0 rounded-full",
+                    STAGE_DOT_COLORS[stage] ?? "bg-slate-400",
+                  )}
+                />
                 <span className="text-sm font-semibold text-foreground">
                   {stage}
                 </span>
                 <span className="inline-flex items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {stageDeals.length}
                 </span>
+                {totalAmount > 0 && (
+                  <span className="ml-auto text-xs text-muted-foreground tabular-nums font-medium">
+                    {formatCurrency(totalAmount)}
+                  </span>
+                )}
               </div>
 
               <Droppable droppableId={stage}>
@@ -128,12 +140,6 @@ export function DealsBoardView({
                   </div>
                 )}
               </Droppable>
-
-              {totalAmount > 0 && (
-                <div className="mt-2 border-t border-border/40 pt-2 px-2 text-xs text-muted-foreground font-medium">
-                  Total: {formatCurrency(totalAmount)}
-                </div>
-              )}
             </div>
           );
         })}

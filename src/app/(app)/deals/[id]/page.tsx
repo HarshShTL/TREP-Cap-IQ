@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useDeal } from "@/hooks/use-deals";
+import { useProfiles } from "@/hooks/use-profile";
 import { DealSummaryPanel } from "@/components/deals/deal-summary-panel";
 import { DealCenterPanel } from "@/components/deals/deal-center-panel";
 import { DealRightPanel } from "@/components/deals/deal-right-panel";
@@ -15,16 +15,18 @@ type Props = { params: { id: string } };
 export default function DealDetailPage({ params }: Props) {
   const { id } = params;
   const { data: deal, isLoading } = useDeal(id);
+  const { data: profiles = [] } = useProfiles();
+
+  const ownerName = profiles.find((p) => p.id === deal?.deal_owner)?.full_name;
 
   return (
     <div className="space-y-4">
-      <Link
-        href="/deals"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ChevronLeft className="size-4" />
-        Deals
-      </Link>
+      <Breadcrumb
+        items={[
+          { label: "Deals", href: "/deals" },
+          { label: deal?.name ?? "Deal" },
+        ]}
+      />
 
       {isLoading ? (
         <div className="space-y-2">
@@ -34,23 +36,28 @@ export default function DealDetailPage({ params }: Props) {
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">{deal?.name ?? "Deal"}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {deal?.name ?? "Deal"}
+            </h1>
             {deal?.stage && (
               <span
                 className={cn(
                   "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium",
-                  STAGE_BADGE_CLASSES[deal.stage] ?? "bg-gray-100 text-gray-700"
+                  STAGE_BADGE_CLASSES[deal.stage] ?? "bg-gray-100 text-gray-700",
                 )}
               >
                 {deal.stage}
               </span>
             )}
           </div>
-          {deal?.amount != null && (
-            <span className="text-xl font-bold text-foreground tabular-nums">
-              {formatCurrency(deal.amount)}
-            </span>
-          )}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {ownerName && <span>Owner: <span className="font-medium text-foreground">{ownerName}</span></span>}
+            {deal?.amount != null && (
+              <span className="text-xl font-bold text-foreground tabular-nums">
+                {formatCurrency(deal.amount)}
+              </span>
+            )}
+          </div>
         </div>
       )}
 

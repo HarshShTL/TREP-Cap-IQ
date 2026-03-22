@@ -38,6 +38,7 @@ interface LogActivityDialogProps {
   dealId?: string;
   contactId?: string;
   companyId?: string;
+  defaultType?: string;
 }
 
 export function LogActivityDialog({
@@ -45,8 +46,10 @@ export function LogActivityDialog({
   onOpenChange,
   dealId,
   contactId,
-  companyId,
+  companyId: _companyId,
+  defaultType,
 }: LogActivityDialogProps) {
+  void _companyId; // reserved for future company_id column
   const createActivity = useCreateActivity();
   const {
     register,
@@ -57,7 +60,7 @@ export function LogActivityDialog({
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { type: "Note" },
+    defaultValues: { type: defaultType || "Note" },
   });
 
   const typeValue = watch("type");

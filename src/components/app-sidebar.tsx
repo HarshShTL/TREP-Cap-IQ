@@ -120,14 +120,28 @@ export function AppSidebar({
       {/* User section */}
       <div className="flex items-center gap-2 px-3 py-3 border-t border-sidebar-border/40 mt-auto">
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-sidebar-foreground/10 flex items-center justify-center text-xs font-medium text-sidebar-foreground shrink-0">
+        <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-xs font-semibold text-amber-400 shrink-0">
           {getInitials(profile?.full_name)}
         </div>
 
-        {/* Name */}
-        <span className="flex-1 min-w-0 text-sm font-medium text-sidebar-foreground truncate">
-          {profile?.full_name ?? "Loading…"}
-        </span>
+        {/* Name + Role */}
+        <div className="flex-1 min-w-0">
+          <span className="block text-sm font-medium text-sidebar-foreground truncate">
+            {profile?.full_name ?? "Loading…"}
+          </span>
+          {profile?.role && (
+            <span className={cn(
+              "inline-flex items-center rounded-full px-1.5 py-0 text-[10px] font-medium mt-0.5",
+              profile.role === "super_admin"
+                ? "bg-amber-500/20 text-amber-400"
+                : profile.role === "read_only"
+                  ? "bg-slate-500/20 text-slate-400"
+                  : "bg-sidebar-foreground/10 text-sidebar-foreground/60",
+            )}>
+              {profile.role === "super_admin" ? "Super Admin" : profile.role === "read_only" ? "Read Only" : "User"}
+            </span>
+          )}
+        </div>
 
         {/* Logout */}
         <button

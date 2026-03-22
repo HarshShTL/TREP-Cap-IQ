@@ -2,67 +2,30 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
 import {
-  Phone,
-  Mail,
-  Calendar,
-  FileText,
-  Activity as ActivityIcon,
-  Briefcase,
   Users,
-  DollarSign,
+  Building2,
+  Briefcase,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityAvatar } from "@/components/ui/entity-avatar";
 import {
   useDashboardStats,
   useDealsByStage,
-  useContactsByStatus,
   useRecentDeals,
   useRecentActivities,
 } from "@/hooks/use-dashboard";
-import { formatCurrency, STAGE_BADGE_CLASSES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-
-// ─── Colors ───────────────────────────────────────────────────────────────────
-const CHART_COLORS = [
-  "#1a3a6b",
-  "#f59e0b",
-  "#2563eb",
-  "#0891b2",
-  "#7c3aed",
-  "#059669",
-  "#dc2626",
-  "#d97706",
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getActivityIcon(type: string) {
-  const lower = (type ?? "").toLowerCase();
-  if (lower.includes("call") || lower.includes("phone"))
-    return <Phone className="size-3.5 shrink-0" />;
-  if (lower.includes("email") || lower.includes("mail"))
-    return <Mail className="size-3.5 shrink-0" />;
-  if (lower.includes("meet") || lower.includes("calendar"))
-    return <Calendar className="size-3.5 shrink-0" />;
-  if (lower.includes("note") || lower.includes("file"))
-    return <FileText className="size-3.5 shrink-0" />;
-  return <ActivityIcon className="size-3.5 shrink-0" />;
-}
+import {
+  formatCurrency,
+  STAGE_BADGE_CLASSES,
+  STAGE_BAR_COLORS,
+  LEAD_STATUS_BADGE_CLASSES,
+  DEAL_STAGES,
+} from "@/lib/constants";
+import { cn, formatDate } from "@/lib/utils";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function Skeleton({ className = "" }: { className?: string }) {
@@ -75,46 +38,44 @@ function Skeleton({ className = "" }: { className?: string }) {
 function KpiCard({
   title,
   value,
+  subtitle,
   icon,
   loading,
-  accentColor,
   iconBg,
-  iconColor,
 }: {
   title: string;
   value: string | number;
+  subtitle?: string;
   icon: React.ReactNode;
   loading?: boolean;
-  accentColor: string;
   iconBg: string;
-  iconColor: string;
 }) {
   return (
-    <Card
-      className={cn(
-        "border-l-4 hover:shadow-md transition-shadow",
-        accentColor,
-      )}
-    >
-      <CardHeader className="pb-2">
+    <Card className="border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="p-5">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {title}
-          </CardTitle>
-          <span className={cn("rounded-full p-2", iconBg, iconColor)}>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            {loading ? (
+              <Skeleton className="mt-2 h-9 w-28" />
+            ) : (
+              <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+                {value}
+              </p>
+            )}
+            {subtitle && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          <span
+            className={cn(
+              "flex size-12 shrink-0 items-center justify-center rounded-full",
+              iconBg,
+            )}
+          >
             {icon}
           </span>
         </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-9 w-28" />
-        ) : (
-          <p className="text-3xl font-bold tracking-tight text-foreground">
-            {value}
-          </p>
-        )}
-        <p className="text-sm text-muted-foreground mt-0.5">{title}</p>
       </CardContent>
     </Card>
   );
@@ -124,9 +85,23 @@ function KpiCard({
 export default function DashboardPage() {
   const stats = useDashboardStats();
   const dealsByStage = useDealsByStage();
-  const contactsByStatus = useContactsByStatus();
   const recentDeals = useRecentDeals();
   const recentActivities = useRecentActivities();
+
+  // Compute max count for bar chart proportionality
+  const maxCount = React.useMemo(() => {
+    if (!dealsByStage.data?.length) return 1;
+    return Math.max(...dealsByStage.data.map((d) => d.count), 1);
+  }, [dealsByStage.data]);
+
+  // Sort pipeline stages in canonical order
+  const sortedStages = React.useMemo(() => {
+    if (!dealsByStage.data) return [];
+    const order = DEAL_STAGES as readonly string[];
+    return [...dealsByStage.data].sort(
+      (a, b) => order.indexOf(a.stage) - order.indexOf(b.stage),
+    );
+  }, [dealsByStage.data]);
 
   return (
     <div className="space-y-6">
@@ -140,258 +115,193 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* ── Row 1: KPI Cards ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Total Active Deals"
-          value={stats.data?.activeDeals ?? 0}
-          icon={<Briefcase className="size-4" />}
-          loading={stats.isLoading}
-          accentColor="border-l-blue-500"
-          iconBg="bg-blue-50 dark:bg-blue-900/20"
-          iconColor="text-blue-600 dark:text-blue-400"
-        />
-        <KpiCard
-          title="Active Contacts"
+          title="Total Contacts"
           value={stats.data?.activeContacts ?? 0}
-          icon={<Users className="size-4" />}
+          subtitle={
+            stats.data
+              ? `${stats.data.contactsNeedCall} need to call`
+              : undefined
+          }
+          icon={<Users className="size-5 text-teal-600" />}
           loading={stats.isLoading}
-          accentColor="border-l-green-500"
-          iconBg="bg-green-50 dark:bg-green-900/20"
-          iconColor="text-green-600 dark:text-green-400"
+          iconBg="bg-teal-50 dark:bg-teal-900/20"
         />
         <KpiCard
-          title="Total Deal Amount"
-          value={stats.data ? formatCurrency(stats.data.totalAmount) : "$0"}
-          icon={<DollarSign className="size-4" />}
+          title="Active Deals"
+          value={stats.data?.activeDeals ?? 0}
+          subtitle={
+            stats.data
+              ? `of ${stats.data.totalDeals} total`
+              : undefined
+          }
+          icon={<Building2 className="size-5 text-indigo-600" />}
           loading={stats.isLoading}
-          accentColor="border-l-amber-500"
+          iconBg="bg-indigo-50 dark:bg-indigo-900/20"
+        />
+        <KpiCard
+          title="Companies"
+          value={stats.data?.companiesCount ?? 0}
+          subtitle="in your pipeline"
+          icon={<Briefcase className="size-5 text-emerald-600" />}
+          loading={stats.isLoading}
+          iconBg="bg-emerald-50 dark:bg-emerald-900/20"
+        />
+        <KpiCard
+          title="Pipeline Value"
+          value={stats.data ? formatCurrency(stats.data.totalAmount) : "$0"}
+          subtitle="total deal value"
+          icon={<TrendingUp className="size-5 text-amber-600" />}
+          loading={stats.isLoading}
           iconBg="bg-amber-50 dark:bg-amber-900/20"
-          iconColor="text-amber-600 dark:text-amber-400"
         />
       </div>
 
-      {/* Charts Row */}
+      {/* ── Row 2: Pipeline + Activity ───────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Bar Chart — Deals by Stage */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Deals by Stage</CardTitle>
+        {/* Pipeline by Stage — Horizontal Bars */}
+        <Card className="border border-slate-200 rounded-xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Pipeline by Stage</CardTitle>
           </CardHeader>
           <CardContent>
             {dealsByStage.isLoading ? (
-              <Skeleton className="h-[250px] w-full" />
-            ) : !dealsByStage.data?.length ? (
-              <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
+                ))}
+              </div>
+            ) : !sortedStages.length ? (
+              <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
                 No deal data yet.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart
-                  data={dealsByStage.data}
-                  margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="hsl(var(--border))"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="stage"
-                    tick={{ fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    allowDecimals={false}
-                    tick={{ fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid hsl(var(--border))",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    name="Deals"
-                    fill="#1e3a5f"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+              <div className="space-y-3">
+                {sortedStages.map(({ stage, count, amount }) => (
+                  <div key={stage} className="flex items-center gap-3">
+                    {/* Stage badge */}
+                    <span
+                      className={cn(
+                        "inline-flex w-28 shrink-0 items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                        STAGE_BADGE_CLASSES[stage] ?? "bg-gray-100 text-gray-700",
+                      )}
+                    >
+                      {stage}
+                    </span>
 
-        {/* Pie Chart — Contacts by Lead Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Contacts by Lead Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {contactsByStatus.isLoading ? (
-              <Skeleton className="h-[250px] w-full" />
-            ) : !contactsByStatus.data?.length ? (
-              <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
-                No contact data yet.
+                    {/* Bar */}
+                    <div className="flex-1">
+                      <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800">
+                        <div
+                          className={cn(
+                            "h-3 rounded-full transition-all duration-300",
+                            STAGE_BAR_COLORS[stage] ?? "bg-slate-400",
+                          )}
+                          style={{
+                            width: `${Math.max((count / maxCount) * 100, 4)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Count + amount */}
+                    <div className="flex w-28 shrink-0 items-center justify-end gap-2 text-xs">
+                      <span className="font-semibold text-foreground">
+                        {count}
+                      </span>
+                      {amount > 0 && (
+                        <span className="text-muted-foreground tabular-nums">
+                          {formatCurrency(amount)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={contactsByStatus.data}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    label={({ name, percent }) =>
-                      percent > 0.05 ? name : ""
-                    }
-                    labelLine={false}
-                  >
-                    {contactsByStatus.data.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={CHART_COLORS[i % CHART_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "1px solid hsl(var(--border))",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Recent Deals */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Deals</CardTitle>
+        {/* Recent Activity Timeline */}
+        <Card className="border border-slate-200 rounded-xl">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+              <Link
+                href="/activity"
+                className="text-xs text-primary hover:underline flex items-center gap-1"
+              >
+                View all <ArrowRight className="size-3" />
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
-            {recentDeals.isLoading ? (
-              <div className="space-y-3 px-4 pb-4">
+            {recentActivities.isLoading ? (
+              <div className="space-y-3 px-6 pb-6">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
-            ) : !recentDeals.data?.length ? (
-              <p className="px-4 pb-4 text-sm text-muted-foreground">
-                No active deals found.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {recentDeals.data.map((deal) => (
-                  <li
-                    key={deal.id}
-                    className="flex items-center gap-3 px-4 py-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/deals/${deal.id}`}
-                        className="truncate text-sm font-medium text-foreground hover:text-primary hover:underline block"
-                      >
-                        {deal.name}
-                      </Link>
-                      {deal.location && (
-                        <p className="truncate text-xs text-muted-foreground mt-0.5">
-                          {deal.location}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <span
-                        className={cn(
-                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                          STAGE_BADGE_CLASSES[deal.stage] ??
-                            "bg-gray-100 text-gray-700",
-                        )}
-                      >
-                        {deal.stage}
-                      </span>
-                      {deal.amount != null && (
-                        <span className="text-xs tabular-nums text-muted-foreground">
-                          {formatCurrency(deal.amount)}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {recentActivities.isLoading ? (
-              <div className="space-y-3 px-4 pb-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full" />
-                ))}
-              </div>
             ) : !recentActivities.data?.length ? (
-              <p className="px-4 pb-4 text-sm text-muted-foreground">
+              <p className="px-6 pb-6 text-sm text-muted-foreground">
                 No activity recorded yet.
               </p>
             ) : (
               <ul className="divide-y divide-border">
                 {recentActivities.data.map((activity) => {
-                  const linkedName =
-                    activity.deals?.name ??
-                    (activity.contacts
-                      ? `${activity.contacts.first_name} ${activity.contacts.last_name}`.trim()
-                      : null);
+                  const contactName = activity.contacts
+                    ? `${activity.contacts.first_name} ${activity.contacts.last_name}`.trim()
+                    : null;
+                  const companyName = (activity.contacts as unknown as { company_name?: string })?.company_name;
+                  const leadStatus = (activity.contacts as unknown as { lead_status?: string })?.lead_status;
+
                   return (
                     <li
                       key={activity.id}
-                      className="flex items-start gap-3 px-4 py-3"
+                      className="flex items-center gap-3 px-6 py-3"
                     >
-                      <span className="mt-0.5 shrink-0 rounded-full p-1.5 bg-muted text-muted-foreground">
-                        {getActivityIcon(activity.type)}
-                      </span>
+                      {contactName ? (
+                        <EntityAvatar
+                          name={contactName}
+                          type="contact"
+                          size="sm"
+                        />
+                      ) : (
+                        <div className="size-8 shrink-0 rounded-full bg-muted" />
+                      )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
+                        <div className="flex items-center gap-1.5">
+                          {contactName && (
+                            <span className="text-sm font-medium text-foreground truncate">
+                              {contactName}
+                            </span>
+                          )}
+                          {companyName && (
+                            <span className="text-xs text-muted-foreground truncate">
+                              at {companyName}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
                           {activity.subject}
                         </p>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                          {linkedName && (
-                            <>
-                              <span className="truncate">{linkedName}</span>
-                              <span>·</span>
-                            </>
-                          )}
-                          <span className="shrink-0">
-                            {formatDistanceToNow(
-                              new Date(activity.created_at),
-                              { addSuffix: true },
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(activity.created_at)}
+                        </span>
+                        {leadStatus && (
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                              LEAD_STATUS_BADGE_CLASSES[leadStatus] ?? "bg-gray-100 text-gray-600",
                             )}
+                          >
+                            {leadStatus}
                           </span>
-                        </div>
+                        )}
                       </div>
                     </li>
                   );
@@ -401,6 +311,96 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Row 3: Active Deals Table ────────────────────────────────── */}
+      <Card className="border border-slate-200 rounded-xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Active Deals</CardTitle>
+            <Link
+              href="/deals"
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              View pipeline <ArrowRight className="size-3" />
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {recentDeals.isLoading ? (
+            <div className="space-y-3 px-6 pb-6">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : !recentDeals.data?.length ? (
+            <p className="px-6 pb-6 text-sm text-muted-foreground">
+              No active deals found.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="bg-slate-50/80 px-6 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Deal Name
+                    </th>
+                    <th className="bg-slate-50/80 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Stage
+                    </th>
+                    <th className="bg-slate-50/80 px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Amount
+                    </th>
+                    <th className="bg-slate-50/80 px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Close Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {recentDeals.data.map((deal) => (
+                    <tr
+                      key={deal.id}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-6 py-3.5">
+                        <Link
+                          href={`/deals/${deal.id}`}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {deal.name}
+                        </Link>
+                        {deal.location && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {deal.location}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                            STAGE_BADGE_CLASSES[deal.stage] ??
+                              "bg-gray-100 text-gray-700",
+                          )}
+                        >
+                          {deal.stage}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right text-sm tabular-nums text-foreground">
+                        {deal.amount != null
+                          ? formatCurrency(deal.amount)
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3.5 text-right text-sm text-muted-foreground">
+                        {formatDate(deal.expected_close_date)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

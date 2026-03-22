@@ -3,19 +3,25 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { InlineEditField } from "@/components/inline-edit-field";
-import { useDeal, useUpdateDeal } from "@/hooks/use-deals";
+import { EntityAvatar } from "@/components/ui/entity-avatar";
+import { useDeal, useUpdateDealStage } from "@/hooks/use-deals";
 import { usePipelineStages } from "@/hooks/use-pipeline-config";
 import { useProfiles } from "@/hooks/use-profile";
-import { formatCurrency, PRIORITIES, ASSET_CLASSES, DEAL_TYPES } from "@/lib/constants";
-import type { Deal } from "@/types";
+import { useDealParticipants } from "@/hooks/use-deal-participants";
+import {
+  formatCurrency,
+  STAGE_BADGE_CLASSES,
+  STAGE_DOT_COLORS,
+  PARTICIPANT_STATUS_BADGE_CLASSES,
+} from "@/lib/constants";
+import { cn, formatDate } from "@/lib/utils";
 
 interface DealQuickEditSheetProps {
   dealId: string | null;
@@ -29,73 +35,182 @@ export function DealQuickEditSheet({
   onOpenChange,
 }: DealQuickEditSheetProps) {
   const { data: deal, isLoading } = useDeal(dealId ?? "");
-  const updateDeal = useUpdateDeal();
   const stages = usePipelineStages();
+  const updateStage = useUpdateDealStage();
   const { data: profiles = [] } = useProfiles();
+  const { data: participants = [] } = useDealParticipants(dealId ?? "");
 
   const resolveProfile = (id: string | null | undefined) =>
-    profiles.find((p) => p.id === id)?.full_name ?? id ?? "";
-
-  const save = (field: keyof Deal) => async (value: string) => {
-    if (!dealId) return;
-    await updateDeal.mutateAsync({
-      id: dealId,
-      [field]: value || null,
-    });
-  };
+    profiles.find((p) => p.id === id)?.full_name ?? null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
         {isLoading || !deal ? (
-          <div className="space-y-4 p-1">
+          <div className="space-y-4">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
             <div className="space-y-3 pt-4">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
             </div>
           </div>
         ) : (
           <>
-            <SheetHeader className="p-0 pr-8">
-              <div className="flex items-start justify-between gap-2">
-                <SheetTitle className="text-base font-semibold leading-snug">
-                  {deal.name}
-                </SheetTitle>
-                <Link
-                  href={`/deals/${deal.id}`}
-                  className="shrink-0 text-muted-foreground hover:text-foreground"
-                  title="Open full view"
-                >
-                  <ExternalLink className="size-4" />
-                </Link>
-              </div>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold leading-snug">
+                {deal.name}
+              </DialogTitle>
               <div className="flex items-center gap-2 pt-1">
-                <Badge variant="secondary">{deal.stage}</Badge>
-                {deal.amount != null && (
-                  <span className="text-sm text-muted-foreground tabular-nums">
-                    {formatCurrency(deal.amount)}
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    STAGE_BADGE_CLASSES[deal.stage] ?? "bg-gray-100 text-gray-700",
+                  )}
+                >
+                  {deal.stage}
+                </span>
+                {deal.asset_class && (
+                  <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">
+                    {deal.asset_class}
                   </span>
                 )}
               </div>
-            </SheetHeader>
+            </DialogHeader>
 
-            <div className="mt-6 space-y-4">
-              <InlineEditField label="Stage" value={deal.stage} type="select" options={stages} onSave={save("stage")} />
-              <InlineEditField label="Amount ($)" value={deal.amount ?? ""} type="number" onSave={save("amount")} formatDisplay={(v) => (v ? formatCurrency(Number(v)) : "")} />
-              <InlineEditField label="Priority" value={deal.priority ?? ""} type="select" options={[...PRIORITIES]} onSave={save("priority")} />
-              <InlineEditField label="Deal Type" value={deal.deal_type ?? ""} type="select" options={[...DEAL_TYPES]} onSave={save("deal_type")} />
-              <InlineEditField label="Asset Class" value={deal.asset_class ?? ""} type="select" options={[...ASSET_CLASSES]} onSave={save("asset_class")} />
-              <InlineEditField label="Location" value={deal.location ?? ""} type="text" onSave={save("location")} />
-              <InlineEditField label="Expected Close Date" value={deal.expected_close_date ?? ""} type="date" onSave={save("expected_close_date")} />
-              <InlineEditField label="Deal Owner" value={resolveProfile(deal.deal_owner)} type="text" onSave={save("deal_owner")} />
-              <InlineEditField label="Description" value={deal.description ?? ""} type="textarea" onSave={save("description")} />
+            {/* Two-column details */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm">
+              <div>
+                <span className="text-xs text-muted-foreground">Deal Owner</span>
+                <p className="font-medium">
+                  {resolveProfile(deal.deal_owner) ?? "—"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Location</span>
+                <p className="font-medium">{deal.location ?? "—"}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Amount</span>
+                <p className="font-medium">
+                  {deal.amount != null ? formatCurrency(deal.amount) : "—"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Close Date</span>
+                <p className="font-medium">
+                  {formatDate(deal.expected_close_date)}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Created</span>
+                <p className="font-medium">{formatDate(deal.created_at)}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Priority</span>
+                <p className="font-medium">{deal.priority ?? "—"}</p>
+              </div>
+            </div>
+
+            {/* Move to Stage */}
+            <div className="pt-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Move to Stage
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {stages.map((stage) => (
+                  <button
+                    key={stage}
+                    onClick={() => {
+                      if (stage !== deal.stage && dealId) {
+                        updateStage.mutate({ id: dealId, stage });
+                      }
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-colors cursor-pointer",
+                      stage === deal.stage
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-2 rounded-full",
+                        STAGE_DOT_COLORS[stage] ?? "bg-slate-400",
+                      )}
+                    />
+                    {stage}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Participants */}
+            {participants.length > 0 && (
+              <div className="pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Contacts ({participants.length})
+                </p>
+                <div className="space-y-2">
+                  {participants.slice(0, 6).map((p) => {
+                    const name = p.contacts
+                      ? `${p.contacts.first_name} ${p.contacts.last_name}`.trim()
+                      : "Unknown";
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <EntityAvatar name={name} type="contact" size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            href={`/contacts/${p.contact_id}`}
+                            className="text-sm font-medium text-primary hover:underline truncate block"
+                          >
+                            {name}
+                          </Link>
+                          {p.contacts?.company_name && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {p.contacts.company_name}
+                            </p>
+                          )}
+                        </div>
+                        {p.status && (
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                              PARTICIPANT_STATUS_BADGE_CLASSES[p.status] ?? "bg-gray-100 text-gray-600",
+                            )}
+                          >
+                            {p.status}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-4 border-t border-border">
+              <Link href={`/deals/${deal.id}`} className="flex-1">
+                <Button variant="default" className="w-full">
+                  <ExternalLink className="size-4 mr-2" />
+                  Open Full View
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
             </div>
           </>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

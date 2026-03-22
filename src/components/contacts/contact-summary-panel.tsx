@@ -1,11 +1,12 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { InlineEditField } from "@/components/inline-edit-field";
+import { EntityAvatar } from "@/components/ui/entity-avatar";
 import { useContact, useUpdateContact } from "@/hooks/use-contacts";
 import { useSchemaConfig } from "@/hooks/use-schema-config";
+import { useProfiles } from "@/hooks/use-profile";
 import {
   LEAD_STATUSES,
   CAPITAL_TYPES,
@@ -23,6 +24,10 @@ export function ContactSummaryPanel({ contactId }: ContactSummaryPanelProps) {
   const { data: contact, isLoading } = useContact(contactId);
   const updateContact = useUpdateContact();
   const { data: schema } = useSchemaConfig("contact");
+  const { data: profiles = [] } = useProfiles();
+
+  const resolveProfile = (id: string | null | undefined) =>
+    profiles.find((p) => p.id === id)?.full_name ?? id ?? "";
 
   if (isLoading) {
     return (
@@ -45,15 +50,13 @@ export function ContactSummaryPanel({ contactId }: ContactSummaryPanelProps) {
     await updateContact.mutateAsync({ id: contactId, [field]: value || null });
   };
 
-  const initials = `${contact.first_name?.[0] ?? ""}${contact.last_name?.[0] ?? ""}`.toUpperCase();
+  const fullName = `${contact.first_name ?? ""} ${contact.last_name ?? ""}`.trim();
   const customFields = schema?.field_definitions ?? [];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-center gap-2 pb-2 text-center">
-        <Avatar className="h-16 w-16">
-          <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-        </Avatar>
+        <EntityAvatar name={fullName} type="contact" size="lg" />
         <div>
           <p className="font-semibold">
             {contact.first_name} {contact.last_name}
@@ -160,7 +163,7 @@ export function ContactSummaryPanel({ contactId }: ContactSummaryPanelProps) {
       />
       <InlineEditField
         label="Contact Owner"
-        value={contact.contact_owner ?? ""}
+        value={resolveProfile(contact.contact_owner)}
         type="text"
         onSave={save("contact_owner")}
       />

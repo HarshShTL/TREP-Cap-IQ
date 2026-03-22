@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { Activity } from "@/types";
 
 const ACTIVITIES_SELECT =
-  "id, type, subject, body, date, deal_id, contact_id, created_at, deals(id, name), contacts(id, first_name, last_name)";
+  "id, type, subject, body, date, deal_id, contact_id, ai_generated, created_at, deals(id, name), contacts(id, first_name, last_name, company_name)";
 
 interface ActivitiesParams {
   dealId?: string;
@@ -20,7 +20,7 @@ interface ActivitiesParams {
 }
 
 export function useActivities(params: ActivitiesParams = {}) {
-  const { dealId, contactId, companyId, type, search = "", cursor, limit = 50 } = params;
+  const { dealId, contactId, type, search = "", cursor, limit = 50 } = params;
   return useQuery({
     queryKey: queryKeys.activities.list(params),
     queryFn: async (): Promise<Activity[]> => {

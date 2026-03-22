@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { formatDistanceToNow, format } from "date-fns";
+import Link from "next/link";
+import { format } from "date-fns";
 import {
   Phone,
   Mail,
@@ -28,6 +29,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useActivities, useDeleteActivity } from "@/hooks/use-activities";
+import { formatDate } from "@/lib/utils";
 import type { Activity } from "@/types";
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -155,6 +157,12 @@ export function ActivityFeed({
                       <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs text-muted-foreground">
                         {activity.type}
                       </span>
+                      {(activity as Activity & { ai_generated?: boolean }).ai_generated && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 text-xs font-medium">
+                          <Sparkles className="size-3" />
+                          AI
+                        </span>
+                      )}
                     </div>
 
                     {/* Body */}
@@ -185,13 +193,25 @@ export function ActivityFeed({
                     {/* Meta row */}
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       {activity.contacts && (
-                        <span>
+                        <Link
+                          href={`/contacts/${activity.contact_id}`}
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {activity.contacts.first_name} {activity.contacts.last_name}
-                        </span>
+                        </Link>
                       )}
-                      {activity.deals && <span>{activity.deals.name}</span>}
+                      {activity.deals && (
+                        <Link
+                          href={`/deals/${activity.deal_id}`}
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {activity.deals.name}
+                        </Link>
+                      )}
                       <span title={format(new Date(ts), "PPP p")}>
-                        {formatDistanceToNow(new Date(ts), { addSuffix: true })}
+                        {formatDate(ts)}
                       </span>
                     </div>
                   </div>

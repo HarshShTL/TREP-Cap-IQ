@@ -11,32 +11,48 @@ export function useDashboardStats() {
     queryKey: ["dashboard", "stats"],
     queryFn: async () => {
       const supabase = createClient();
-      const [dealsRes, contactsRes, amountsRes] = await Promise.all([
-        supabase
-          .from("deals")
-          .select("*", { count: "exact", head: true })
-          .not("stage", "in", EXCLUDED_STAGES)
-          .is("deleted_at", null),
-        supabase
-          .from("contacts")
-          .select("*", { count: "exact", head: true })
-          .not("lead_status", "is", null)
-          .is("deleted_at", null),
-        supabase
-          .from("deals")
-          .select("amount")
-          .not("stage", "in", EXCLUDED_STAGES)
-          .is("deleted_at", null),
-      ]);
+      const [dealsRes, contactsRes, amountsRes, companiesRes, totalDealsRes, contactsNeedCallRes] =
+        await Promise.all([
+          supabase
+            .from("deals")
+            .select("*", { count: "exact", head: true })
+            .not("stage", "in", EXCLUDED_STAGES)
+            .is("deleted_at", null),
+          supabase
+            .from("contacts")
+            .select("*", { count: "exact", head: true })
+            .is("deleted_at", null),
+          supabase
+            .from("deals")
+            .select("amount")
+            .not("stage", "in", EXCLUDED_STAGES)
+            .is("deleted_at", null),
+          supabase
+            .from("companies")
+            .select("*", { count: "exact", head: true })
+            .is("deleted_at", null),
+          supabase
+            .from("deals")
+            .select("*", { count: "exact", head: true })
+            .is("deleted_at", null),
+          supabase
+            .from("contacts")
+            .select("*", { count: "exact", head: true })
+            .is("deleted_at", null)
+            .in("lead_status", ["New", "Open", "Attempted"]),
+        ]);
 
       const totalAmount = (amountsRes.data ?? []).reduce(
         (sum, d) => sum + (d.amount ?? 0),
-        0
+        0,
       );
 
       return {
         activeDeals: dealsRes.count ?? 0,
+        totalDeals: totalDealsRes.count ?? 0,
         activeContacts: contactsRes.count ?? 0,
+        contactsNeedCall: contactsNeedCallRes.count ?? 0,
+        companiesCount: companiesRes.count ?? 0,
         totalAmount,
       };
     },
@@ -50,19 +66,24 @@ export function useDealsByStage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("deals")
-        .select("stage")
+        .select("stage, amount")
         .is("deleted_at", null);
 
-      const grouped: Record<string, number> = {};
+      const grouped: Record<string, { count: number; amount: number }> = {};
       (data ?? []).forEach((d) => {
         if (d.stage) {
-          grouped[d.stage] = (grouped[d.stage] ?? 0) + 1;
+          const existing = grouped[d.stage] ?? { count: 0, amount: 0 };
+          existing.count += 1;
+          existing.amount += d.amount ?? 0;
+          grouped[d.stage] = existing;
         }
       });
 
-      return Object.entries(grouped)
-        .map(([stage, count]) => ({ stage, count }))
-        .sort((a, b) => b.count - a.count);
+      return Object.entries(grouped).map(([stage, { count, amount }]) => ({
+        stage,
+        count,
+        amount,
+      }));
     },
   });
 }
@@ -96,11 +117,11 @@ export function useRecentDeals() {
       const supabase = createClient();
       const { data } = await supabase
         .from("deals")
-        .select("id, name, stage, amount, location, updated_at")
+        .select("id, name, stage, amount, location, expected_close_date, updated_at")
         .not("stage", "in", EXCLUDED_STAGES)
         .is("deleted_at", null)
         .order("updated_at", { ascending: false })
-        .limit(10);
+        .limit(8);
       return (data ?? []) as Deal[];
     },
   });
@@ -114,10 +135,10 @@ export function useRecentActivities() {
       const { data } = await supabase
         .from("activities")
         .select(
-          "id, type, subject, created_at, deal_id, contact_id, deals(name), contacts(first_name, last_name)"
+          "id, type, subject, created_at, deal_id, contact_id, deals(name), contacts(first_name, last_name, company_name, lead_status)",
         )
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(8);
       return (data ?? []) as unknown as Activity[];
     },
   });
