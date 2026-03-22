@@ -18,25 +18,41 @@ export function DealCenterPanel({ dealId }: DealCenterPanelProps) {
 
   return (
     <>
-      <Tabs defaultValue="activities">
-        <div className="mb-4 flex items-center justify-between">
-          <TabsList className="h-9 gap-1 bg-muted/50 p-1">
-            <TabsTrigger value="activities" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Activities</TabsTrigger>
-            <TabsTrigger value="participants" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Participants</TabsTrigger>
-            <TabsTrigger value="nda" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">NDA Tracking</TabsTrigger>
+      <Tabs defaultValue="activities" className="flex flex-col h-full">
+        <div className="mb-4 flex items-center gap-3">
+          <TabsList className="flex w-full gap-1 rounded-full bg-muted/50 p-1">
+            <TabsTrigger
+              value="activities"
+              className="flex-1 rounded-full px-4 py-2 text-sm font-medium data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none"
+            >
+              Activities
+            </TabsTrigger>
+            <TabsTrigger
+              value="participants"
+              className="flex-1 rounded-full px-4 py-2 text-sm font-medium data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none"
+            >
+              Participants
+            </TabsTrigger>
+            <TabsTrigger
+              value="nda"
+              className="flex-1 rounded-full px-4 py-2 text-sm font-medium data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none"
+            >
+              NDA Tracking
+            </TabsTrigger>
           </TabsList>
-          <Button size="sm" onClick={() => setLogOpen(true)}>
+          <Button size="sm" className="shrink-0" onClick={() => setLogOpen(true)}>
             <Plus className="mr-2 size-4" />
             Log Activity
           </Button>
         </div>
-        <TabsContent value="activities" className="mt-0">
+
+        <TabsContent value="activities" className="mt-0 flex-1">
           <ActivityFeed dealId={dealId} onLogActivity={() => setLogOpen(true)} />
         </TabsContent>
-        <TabsContent value="participants" className="mt-0">
+        <TabsContent value="participants" className="mt-0 flex-1">
           <DealParticipantsTab dealId={dealId} />
         </TabsContent>
-        <TabsContent value="nda" className="mt-0">
+        <TabsContent value="nda" className="mt-0 flex-1">
           <NdaTrackingTab dealId={dealId} />
         </TabsContent>
       </Tabs>

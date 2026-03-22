@@ -46,12 +46,17 @@ function DesktopTopHeader() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar — desktop */}
       <div className="hidden md:block md:sticky md:top-0 md:h-screen md:shrink-0">
-        <AppSidebar className="h-full" />
+        <AppSidebar
+          className="h-full"
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+        />
       </div>
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
