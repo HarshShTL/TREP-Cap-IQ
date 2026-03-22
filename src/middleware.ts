@@ -21,6 +21,11 @@ export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(url, key, {
+    cookieOptions: {
+      sameSite: "none",
+      secure: true,
+      path: "/",
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();
