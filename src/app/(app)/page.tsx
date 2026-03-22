@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntityAvatar } from "@/components/ui/entity-avatar";
 import {
   useDashboardStats,
   useDealsByStage,

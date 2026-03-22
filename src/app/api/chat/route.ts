@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Agentic loop — Claude may call tools multiple times before a final answer
-    let loopMessages = [...messages];
+    const loopMessages = [...messages];
 
     for (let i = 0; i < 8; i++) {
       const response = await anthropic.messages.create({

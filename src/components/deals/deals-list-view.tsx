@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
+import { SkeletonRow } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { formatCurrency, PRIORITY_DOT_COLORS, STAGE_BADGE_CLASSES } from "@/lib/constants";
 import { cn } from "@/lib/utils";

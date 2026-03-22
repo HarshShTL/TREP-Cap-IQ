@@ -98,7 +98,7 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
       )
       .is("deleted_at", null)
       .limit(8)
-      .then(({ data, error: _e }) => {
+      .then(({ data }) => {
         if (!cancelled) {
           setResults((data ?? []) as unknown as Contact[]);
           setSearching(false);
