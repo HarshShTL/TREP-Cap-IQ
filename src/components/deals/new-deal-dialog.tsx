@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { AutofillInput } from "@/components/autofill-input";
 import { useCreateDeal } from "@/hooks/use-deals";
+import { useProfiles } from "@/hooks/use-profile";
 import {
   DEAL_STAGES,
   PRIORITIES,
@@ -57,6 +58,7 @@ export function NewDealDialog({
   defaultStage,
 }: NewDealDialogProps) {
   const createDeal = useCreateDeal();
+  const { data: profiles = [] } = useProfiles();
   const {
     register,
     handleSubmit,
@@ -240,11 +242,45 @@ export function NewDealDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Deal Owner</label>
-                <Input {...register("deal_owner")} placeholder="Name or email" />
+                <Controller
+                  name="deal_owner"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Assign to…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profiles.map((p) => (
+                          <SelectItem key={p.id} value={p.full_name ?? p.id}>
+                            {p.full_name ?? p.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Collaborator</label>
-                <Input {...register("deal_collaborator")} placeholder="Name or email" />
+                <Controller
+                  name="deal_collaborator"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Assign to…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profiles.map((p) => (
+                          <SelectItem key={p.id} value={p.full_name ?? p.id}>
+                            {p.full_name ?? p.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
 

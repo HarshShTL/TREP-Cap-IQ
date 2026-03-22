@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { AutofillInput } from "@/components/autofill-input";
 import { useCreateContact } from "@/hooks/use-contacts";
+import { useProfiles } from "@/hooks/use-profile";
 import {
   LEAD_STATUSES,
   CAPITAL_TYPES,
@@ -62,6 +63,7 @@ interface NewContactDialogProps {
 
 export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) {
   const createContact = useCreateContact();
+  const { data: profiles = [] } = useProfiles();
   const {
     register,
     handleSubmit,
@@ -369,7 +371,24 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Contact Owner</label>
-                <Input {...register("contact_owner")} placeholder="Your name" />
+                <Controller
+                  name="contact_owner"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Assign to…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profiles.map((p) => (
+                          <SelectItem key={p.id} value={p.full_name ?? p.id}>
+                            {p.full_name ?? p.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Database Source</label>
