@@ -1,12 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v4";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutofillInput } from "@/components/autofill-input";
 import { useCreateContact } from "@/hooks/use-contacts";
 import {
@@ -42,58 +41,23 @@ const schema = z.object({
   job_title: z.string().optional(),
   company_name: z.string().optional(),
   lead_status: z.string().optional(),
+  relationship: z.string().optional(),
   capital_type: z.string().optional(),
   asset_class: z.string().optional(),
   region: z.string().optional(),
   investment_strategy: z.string().optional(),
-  relationship: z.string().optional(),
   next_steps: z.string().optional(),
-  street_address: z.string().optional(),
+  contact_owner: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
-  postal_code: z.string().optional(),
-  country: z.string().optional(),
   database_source: z.string().optional(),
-  contact_owner: z.string().optional(),
-  website: z.string().optional(),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormValues = z.infer<typeof schema>;
 
 interface NewContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: readonly string[];
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-sm font-medium">{label}</label>
-      <Select value={value || "__none__"} onValueChange={(v) => onChange(v === "__none__" ? "" : v)}>
-        <SelectTrigger>
-          <SelectValue placeholder={`Select ${label}`} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__none__">—</SelectItem>
-          {options.map((o) => (
-            <SelectItem key={o} value={o}>
-              {o}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
 }
 
 export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) {
@@ -101,227 +65,345 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
+    control,
     reset,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {},
   });
 
-  const onSubmit = async (data: FormData) => {
-    await createContact.mutateAsync({
-      first_name: data.first_name,
-      last_name: data.last_name,
-      email: data.email || null,
-      phone: data.phone || null,
-      job_title: data.job_title || null,
-      company_name: data.company_name || null,
-      company_id: null,
-      lead_status: data.lead_status || null,
-      capital_type: data.capital_type || null,
-      family_office: null,
-      institutional: null,
-      retail: null,
-      indirect: null,
-      ownership: null,
-      investment_strategy: data.investment_strategy || null,
-      region: data.region || null,
-      asset_class: data.asset_class || null,
-      relationship: data.relationship || null,
-      next_steps: data.next_steps || null,
-      database_source: data.database_source || null,
-      email_verification: null,
-      trep_capital_type_prior_outreach: null,
-      trep_deal_prior_outreach: null,
-      contact_owner: data.contact_owner || null,
-      street_address: data.street_address || null,
-      city: data.city || null,
-      state: data.state || null,
-      postal_code: data.postal_code || null,
-      country: data.country || null,
-      time_zone: null,
-      industry: null,
-      website: data.website || null,
-      last_interaction_date: null,
-      custom_fields: null,
-    });
-    reset();
-    onOpenChange(false);
+  const onSubmit = (values: FormValues) => {
+    createContact.mutate(
+      {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email || null,
+        phone: values.phone || null,
+        job_title: values.job_title || null,
+        company_name: values.company_name || null,
+        company_id: null,
+        lead_status: values.lead_status || null,
+        capital_type: values.capital_type || null,
+        family_office: null,
+        institutional: null,
+        retail: null,
+        indirect: null,
+        ownership: null,
+        investment_strategy: values.investment_strategy || null,
+        region: values.region || null,
+        asset_class: values.asset_class || null,
+        relationship: values.relationship || null,
+        next_steps: values.next_steps || null,
+        database_source: values.database_source || null,
+        email_verification: null,
+        trep_capital_type_prior_outreach: null,
+        trep_deal_prior_outreach: null,
+        contact_owner: values.contact_owner || null,
+        street_address: null,
+        city: values.city || null,
+        state: values.state || null,
+        postal_code: null,
+        country: null,
+        time_zone: null,
+        industry: null,
+        website: null,
+        last_interaction_date: null,
+        custom_fields: null,
+      },
+      {
+        onSuccess: () => {
+          reset();
+          onOpenChange(false);
+        },
+      }
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle>New Contact</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Tabs defaultValue="basic">
-            <TabsList className="mb-4">
-              <TabsTrigger value="basic">Basic</TabsTrigger>
-              <TabsTrigger value="investment">Investment</TabsTrigger>
-              <TabsTrigger value="address">Address</TabsTrigger>
-              <TabsTrigger value="source">Source</TabsTrigger>
-            </TabsList>
+          <DialogHeader>
+            <DialogTitle>New Contact</DialogTitle>
+          </DialogHeader>
 
-            <div className="max-h-[55vh] overflow-y-auto pr-1">
-              <TabsContent value="basic" className="mt-0 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">First Name *</label>
-                    <Input {...register("first_name")} placeholder="Jane" />
-                    {errors.first_name && (
-                      <p className="text-xs text-destructive">{errors.first_name.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Last Name *</label>
-                    <Input {...register("last_name")} placeholder="Smith" />
-                    {errors.last_name && (
-                      <p className="text-xs text-destructive">{errors.last_name.message}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Email</label>
-                  <Input {...register("email")} type="email" placeholder="jane@example.com" />
-                  {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email.message}</p>
+          <div className="mt-4 max-h-[60vh] overflow-y-auto space-y-4 pr-1">
+
+            {/* Name */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">First Name *</label>
+                <Input {...register("first_name")} placeholder="Jane" />
+                {errors.first_name && (
+                  <p className="text-xs text-destructive">{errors.first_name.message}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Last Name *</label>
+                <Input {...register("last_name")} placeholder="Smith" />
+                {errors.last_name && (
+                  <p className="text-xs text-destructive">{errors.last_name.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Contact info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Email</label>
+                <Input {...register("email")} type="email" placeholder="jane@example.com" />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Phone</label>
+                <Input {...register("phone")} placeholder="+1 (555) 000-0000" />
+              </div>
+            </div>
+
+            {/* Job / Company */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Job Title</label>
+                <Controller
+                  name="job_title"
+                  control={control}
+                  render={({ field }) => (
+                    <AutofillInput
+                      table="contacts"
+                      column="job_title"
+                      placeholder="Managing Director"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onSelect={field.onChange}
+                    />
                   )}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Phone</label>
-                  <Input {...register("phone")} placeholder="+1 (555) 000-0000" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Job Title</label>
-                  <AutofillInput
-                    table="contacts"
-                    column="job_title"
-                    placeholder="Managing Director"
-                    {...register("job_title")}
-                    onSelect={(v) => setValue("job_title", v)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Company</label>
-                  <AutofillInput
-                    table="contacts"
-                    column="company_name"
-                    placeholder="Acme Capital"
-                    {...register("company_name")}
-                    onSelect={(v) => setValue("company_name", v)}
-                  />
-                </div>
-                <SelectField
-                  label="Lead Status"
-                  value={watch("lead_status") ?? ""}
-                  onChange={(v) => setValue("lead_status", v)}
-                  options={LEAD_STATUSES}
                 />
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Contact Owner</label>
-                  <Input {...register("contact_owner")} placeholder="Your name" />
-                </div>
-              </TabsContent>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Company</label>
+                <Controller
+                  name="company_name"
+                  control={control}
+                  render={({ field }) => (
+                    <AutofillInput
+                      table="contacts"
+                      column="company_name"
+                      placeholder="Acme Capital"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onSelect={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </div>
 
-              <TabsContent value="investment" className="mt-0 space-y-3">
-                <SelectField
-                  label="Capital Type"
-                  value={watch("capital_type") ?? ""}
-                  onChange={(v) => setValue("capital_type", v)}
-                  options={CAPITAL_TYPES}
+            {/* Lead Status / Relationship */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Lead Status</label>
+                <Controller
+                  name="lead_status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEAD_STATUSES.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
-                <SelectField
-                  label="Asset Class"
-                  value={watch("asset_class") ?? ""}
-                  onChange={(v) => setValue("asset_class", v)}
-                  options={ASSET_CLASSES}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Relationship</label>
+                <Controller
+                  name="relationship"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RELATIONSHIP_TYPES.map((r) => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
-                <SelectField
-                  label="Region"
-                  value={watch("region") ?? ""}
-                  onChange={(v) => setValue("region", v)}
-                  options={REGIONS}
-                />
-                <SelectField
-                  label="Investment Strategy"
-                  value={watch("investment_strategy") ?? ""}
-                  onChange={(v) => setValue("investment_strategy", v)}
-                  options={INVESTMENT_STRATEGIES}
-                />
-                <SelectField
-                  label="Relationship"
-                  value={watch("relationship") ?? ""}
-                  onChange={(v) => setValue("relationship", v)}
-                  options={RELATIONSHIP_TYPES}
-                />
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Next Steps</label>
-                  <Textarea
-                    {...register("next_steps")}
-                    rows={2}
-                    className="resize-none"
-                    placeholder="What's the next action?"
-                  />
-                </div>
-              </TabsContent>
+              </div>
+            </div>
 
-              <TabsContent value="address" className="mt-0 space-y-3">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Street Address</label>
-                  <Input {...register("street_address")} placeholder="123 Main St" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">City</label>
+            {/* Capital Type / Asset Class */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Capital Type</label>
+                <Controller
+                  name="capital_type"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CAPITAL_TYPES.map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Asset Class</label>
+                <Controller
+                  name="asset_class"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ASSET_CLASSES.map((a) => (
+                          <SelectItem key={a} value={a}>{a}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Region / Strategy */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Region</label>
+                <Controller
+                  name="region"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REGIONS.map((r) => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Investment Strategy</label>
+                <Controller
+                  name="investment_strategy"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INVESTMENT_STRATEGIES.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* City / State */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">City</label>
+                <Controller
+                  name="city"
+                  control={control}
+                  render={({ field }) => (
                     <AutofillInput
                       table="contacts"
                       column="city"
                       placeholder="New York"
-                      {...register("city")}
-                      onSelect={(v) => setValue("city", v)}
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onSelect={field.onChange}
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">State</label>
+                  )}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">State</label>
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({ field }) => (
                     <AutofillInput
                       table="contacts"
                       column="state"
                       placeholder="NY"
-                      {...register("state")}
-                      onSelect={(v) => setValue("state", v)}
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onSelect={field.onChange}
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Postal Code</label>
-                    <Input {...register("postal_code")} placeholder="10001" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Country</label>
-                    <Input {...register("country")} placeholder="USA" />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="source" className="mt-0 space-y-3">
-                <SelectField
-                  label="Database Source"
-                  value={watch("database_source") ?? ""}
-                  onChange={(v) => setValue("database_source", v)}
-                  options={DATABASE_SOURCES}
+                  )}
                 />
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Website</label>
-                  <Input {...register("website")} placeholder="https://example.com" />
-                </div>
-              </TabsContent>
+              </div>
             </div>
-          </Tabs>
+
+            {/* Contact Owner / Database Source */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Contact Owner</label>
+                <Input {...register("contact_owner")} placeholder="Your name" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Database Source</label>
+                <Controller
+                  name="database_source"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DATABASE_SOURCES.map((d) => (
+                          <SelectItem key={d} value={d}>{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Next Steps */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Next Steps</label>
+              <Textarea
+                {...register("next_steps")}
+                placeholder="What's the next action?"
+                rows={3}
+                className="resize-none"
+              />
+            </div>
+
+          </div>
 
           <DialogFooter className="mt-4">
             <Button
@@ -331,6 +413,7 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
                 reset();
                 onOpenChange(false);
               }}
+              disabled={createContact.isPending}
             >
               Cancel
             </Button>
