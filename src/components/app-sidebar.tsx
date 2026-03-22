@@ -8,6 +8,7 @@ import {
   Building2,
   ChevronsLeft,
   ChevronsRight,
+  Landmark,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -74,8 +75,8 @@ export function AppSidebar({
       {/* Logo */}
       <div className="border-b border-sidebar-border/60 px-4 py-4">
         <Link href="/" className="flex items-center gap-3" onClick={onNavigate}>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-xs font-bold text-slate-900 shadow-sm">
-            TC
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500 shadow-sm">
+            <Landmark className="size-5 text-slate-900" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
