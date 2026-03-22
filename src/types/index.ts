@@ -115,7 +115,6 @@ export interface Contact {
   time_zone: string | null;
   industry: string | null;
   website: string | null;
-  linkedin: string | null;
   last_interaction_date: string | null;
   search_vector?: unknown;
   custom_fields: Record<string, unknown> | null;
@@ -131,7 +130,6 @@ export interface Company {
   domain: string | null;
   company_type: string | null;
   industry: string | null;
-  linkedin: string | null;
   hq_address: string | null;
   hq_city: string | null;
   hq_state: string | null;

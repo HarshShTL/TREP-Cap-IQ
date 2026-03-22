@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/page-header";
@@ -26,7 +26,7 @@ export default function CompaniesPage() {
   const debouncedSearch = useDebounce(search, 300);
 
   const params = { search: debouncedSearch, sortBy, sortAsc, cursor, limit: 50 };
-  const { data, isLoading } = useCompanies(params);
+  const { data, isLoading, error } = useCompanies(params);
 
   React.useEffect(() => {
     if (!cursor) {
@@ -100,6 +100,13 @@ export default function CompaniesPage() {
             </div>
             <ExportCsvButton data={exportData} filename="companies.csv" />
           </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span>Failed to load companies: {(error as Error).message}</span>
+            </div>
+          )}
 
           <CompaniesTable
             companies={allCompanies}

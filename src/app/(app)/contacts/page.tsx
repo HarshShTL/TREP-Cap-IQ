@@ -11,6 +11,7 @@ import { ContactsTable } from "@/components/contacts/contacts-table";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
 import { useContacts } from "@/hooks/use-contacts";
 import { useDebounce } from "@/hooks/use-debounce";
+import { AlertCircle } from "lucide-react";
 
 export default function ContactsPage() {
   const [search, setSearch] = React.useState("");
@@ -24,7 +25,7 @@ export default function ContactsPage() {
   const debouncedSearch = useDebounce(search, 300);
 
   const params = { search: debouncedSearch, sortBy, sortAsc, cursor, limit: 50 };
-  const { data, isLoading } = useContacts(params);
+  const { data, isLoading, error } = useContacts(params);
 
   React.useEffect(() => {
     if (!cursor) {
@@ -104,6 +105,13 @@ export default function ContactsPage() {
             </div>
             <ExportCsvButton data={exportData} filename="contacts.csv" />
           </div>
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span>Failed to load contacts: {(error as Error).message}</span>
+            </div>
+          )}
 
           <ContactsTable
             contacts={contacts}

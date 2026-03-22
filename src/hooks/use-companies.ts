@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { Company, Contact } from "@/types";
 
 const COMPANIES_SELECT =
-  "id, name, website, domain, company_type, industry, linkedin, hq_address, hq_city, hq_state, hq_country, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, aum, notes, custom_fields, deleted_at, updated_at, created_at";
+  "id, name, website, domain, company_type, industry, hq_address, hq_city, hq_state, hq_country, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, aum, notes, custom_fields, deleted_at, updated_at, created_at";
 
 const CONTACTS_SELECT =
   "id, first_name, last_name, email, phone, job_title, company_name, lead_status, updated_at, created_at";

@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { Contact } from "@/types";
 
 const CONTACTS_SELECT =
-  "id, first_name, last_name, email, phone, job_title, company_name, company_id, lead_status, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, relationship, next_steps, database_source, email_verification, trep_capital_type_prior_outreach, trep_deal_prior_outreach, contact_owner, street_address, city, state, postal_code, country, time_zone, industry, website, linkedin, last_interaction_date, custom_fields, deleted_at, updated_at, created_at";
+  "id, first_name, last_name, email, phone, job_title, company_name, company_id, lead_status, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, relationship, next_steps, database_source, email_verification, trep_capital_type_prior_outreach, trep_deal_prior_outreach, contact_owner, street_address, city, state, postal_code, country, time_zone, industry, website, last_interaction_date, custom_fields, deleted_at, updated_at, created_at";
 
 interface ContactsParams {
   search?: string;
