@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InlineEditField } from "@/components/inline-edit-field";
 import { useDeal, useUpdateDeal } from "@/hooks/use-deals";
 import { usePipelineStages } from "@/hooks/use-pipeline-config";
+import { useProfiles } from "@/hooks/use-profile";
 import { formatCurrency, PRIORITIES, ASSET_CLASSES, DEAL_TYPES } from "@/lib/constants";
 import type { Deal } from "@/types";
 
@@ -30,6 +31,10 @@ export function DealQuickEditSheet({
   const { data: deal, isLoading } = useDeal(dealId ?? "");
   const updateDeal = useUpdateDeal();
   const stages = usePipelineStages();
+  const { data: profiles = [] } = useProfiles();
+
+  const resolveProfile = (id: string | null | undefined) =>
+    profiles.find((p) => p.id === id)?.full_name ?? id ?? "";
 
   const save = (field: keyof Deal) => async (value: string) => {
     if (!dealId) return;
@@ -85,7 +90,7 @@ export function DealQuickEditSheet({
               <InlineEditField label="Asset Class" value={deal.asset_class ?? ""} type="select" options={[...ASSET_CLASSES]} onSave={save("asset_class")} />
               <InlineEditField label="Location" value={deal.location ?? ""} type="text" onSave={save("location")} />
               <InlineEditField label="Expected Close Date" value={deal.expected_close_date ?? ""} type="date" onSave={save("expected_close_date")} />
-              <InlineEditField label="Deal Owner" value={deal.deal_owner ?? ""} type="text" onSave={save("deal_owner")} />
+              <InlineEditField label="Deal Owner" value={resolveProfile(deal.deal_owner)} type="text" onSave={save("deal_owner")} />
               <InlineEditField label="Description" value={deal.description ?? ""} type="textarea" onSave={save("description")} />
             </div>
           </>

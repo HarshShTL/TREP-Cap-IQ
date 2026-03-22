@@ -26,3 +26,17 @@ export function useIsAdmin(): boolean {
   const { data } = useProfile();
   return data?.role === "super_admin";
 }
+
+export function useProfiles() {
+  return useQuery({
+    queryKey: ["profiles", "all"],
+    queryFn: async (): Promise<Profile[]> => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, role, full_name, avatar_url");
+      return (data ?? []) as Profile[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}

@@ -83,12 +83,6 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
         onSave={save("website")}
       />
       <InlineEditField
-        label="LinkedIn"
-        value={company.linkedin ?? ""}
-        type="text"
-        onSave={save("linkedin")}
-      />
-      <InlineEditField
         label="HQ City"
         value={company.hq_city ?? ""}
         type="text"

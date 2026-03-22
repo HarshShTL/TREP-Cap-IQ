@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { MapPin, Calendar, DollarSign } from "lucide-react";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatCurrency, PRIORITY_DOT_COLORS } from "@/lib/constants";
 import type { Deal } from "@/types";
@@ -16,26 +16,30 @@ export function DealCard({ deal, onClick }: DealCardProps) {
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-xl bg-card p-3 ring-1 ring-foreground/10 hover:ring-primary/30 transition-shadow hover:shadow-md space-y-2"
+      className="rounded-xl bg-card border border-border/60 p-3 shadow-sm hover:shadow-md transition-shadow space-y-2 cursor-pointer"
     >
       {/* Name + priority dot */}
-      <div className="flex items-start gap-2">
+      <div className="flex items-start justify-between gap-2">
+        <Link
+          href={`/deals/${deal.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="text-sm font-semibold leading-snug text-foreground line-clamp-2 flex-1 hover:underline hover:text-primary"
+        >
+          {deal.name}
+        </Link>
         <span
           className={cn(
-            "mt-1.5 size-2 shrink-0 rounded-full",
-            deal.priority ? PRIORITY_DOT_COLORS[deal.priority] : "bg-muted"
+            "mt-1 size-2 shrink-0 rounded-full",
+            PRIORITY_DOT_COLORS[deal.priority] ?? "bg-muted"
           )}
         />
-        <p className="text-sm font-medium leading-snug text-foreground line-clamp-2">
-          {deal.name}
-        </p>
       </div>
 
       {/* Asset class */}
       {deal.asset_class && (
-        <Badge variant="secondary" className="text-xs">
+        <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">
           {deal.asset_class}
-        </Badge>
+        </span>
       )}
 
       {/* Location */}
@@ -47,21 +51,21 @@ export function DealCard({ deal, onClick }: DealCardProps) {
       )}
 
       {/* Amount + close date */}
-      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 text-xs">
         {deal.amount != null ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <DollarSign className="size-3 shrink-0" />
-            <span className="tabular-nums">{formatCurrency(deal.amount)}</span>
+            <span className="tabular-nums font-medium text-foreground">
+              {formatCurrency(deal.amount)}
+            </span>
           </div>
         ) : (
           <span />
         )}
         {deal.expected_close_date && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Calendar className="size-3 shrink-0" />
-            <span>
-              {format(new Date(deal.expected_close_date), "MMM d, yyyy")}
-            </span>
+            <span>{format(new Date(deal.expected_close_date), "MMM d, yyyy")}</span>
           </div>
         )}
       </div>

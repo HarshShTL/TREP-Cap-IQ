@@ -114,7 +114,7 @@ export function useRecentActivities() {
       const { data } = await supabase
         .from("activities")
         .select(
-          "id, type, subject, created_at, deal_id, contact_id, is_ai_generated, deals(name), contacts(first_name, last_name)"
+          "id, type, subject, created_at, deal_id, contact_id, deals(name), contacts(first_name, last_name)"
         )
         .order("created_at", { ascending: false })
         .limit(20);

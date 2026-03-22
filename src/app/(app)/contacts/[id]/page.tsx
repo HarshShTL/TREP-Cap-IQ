@@ -111,9 +111,9 @@ export default function ContactDetailPage({ params }: Props) {
         <div className="rounded-xl border bg-card p-4 min-h-[400px]">
           <Tabs defaultValue="activities">
             <div className="mb-4 flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="activities">Activities</TabsTrigger>
-                <TabsTrigger value="deals">Deals</TabsTrigger>
+              <TabsList className="h-9 gap-1 bg-muted/50 p-1">
+                <TabsTrigger value="activities" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Activities</TabsTrigger>
+                <TabsTrigger value="deals" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Deals</TabsTrigger>
               </TabsList>
               <Button size="sm" onClick={() => setLogOpen(true)}>
                 <Plus className="mr-2 size-4" />
@@ -132,16 +132,6 @@ export default function ContactDetailPage({ params }: Props) {
         <div className="rounded-xl border bg-card p-4">
           <p className="mb-3 text-sm font-medium">Info</p>
           <div className="space-y-2 text-sm">
-            {contact?.linkedin && (
-              <a
-                href={contact.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block truncate text-primary hover:underline"
-              >
-                LinkedIn
-              </a>
-            )}
             {contact?.website && (
               <a
                 href={contact.website}

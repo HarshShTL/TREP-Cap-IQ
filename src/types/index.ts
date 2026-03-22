@@ -160,7 +160,6 @@ export interface DealParticipant {
   commitment_amount: number | null;
   nda_sent_date: string | null;
   nda_signed_date: string | null;
-  last_activity_date: string | null;
   // joined fields
   contacts?: {
     id: string;
@@ -181,20 +180,15 @@ export interface Activity {
   id: string;
   type: string;
   subject: string;
-  body: string | null;
-  date: string | null;
+  body?: string | null;
+  date?: string | null;
   deal_id: string | null;
   contact_id: string | null;
-  company_id: string | null;
-  is_ai_generated: boolean | null;
-  created_by: string | null;
-  custom_fields: Record<string, unknown> | null;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   // joined fields
   deals?: { id: string; name: string } | null;
   contacts?: { id: string; first_name: string; last_name: string } | null;
-  companies?: { id: string; name: string } | null;
 }
 
 export interface FileRecord {

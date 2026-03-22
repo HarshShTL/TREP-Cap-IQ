@@ -111,17 +111,24 @@ export function useUpdateDealStage() {
   return useMutation({
     mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
       const supabase = createClient();
+      const update: Record<string, unknown> = { stage };
+      if (stage === "Closed") {
+        update.close_date = new Date().toISOString().split("T")[0];
+      }
       const { error } = await supabase
         .from("deals")
-        .update({ stage })
+        .update(update)
         .eq("id", id);
       if (error) throw error;
     },
     onMutate: async ({ id, stage }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.deals.list() });
       const previousDeals = queryClient.getQueryData<Deal[]>(queryKeys.deals.list());
+      const closeDate = stage === "Closed" ? new Date().toISOString().split("T")[0] : undefined;
       queryClient.setQueryData(queryKeys.deals.list(), (old: Deal[] | undefined) =>
-        (old ?? []).map((d) => (d.id === id ? { ...d, stage } : d))
+        (old ?? []).map((d) =>
+          d.id === id ? { ...d, stage, ...(closeDate ? { close_date: closeDate } : {}) } : d
+        )
       );
       return { previousDeals };
     },

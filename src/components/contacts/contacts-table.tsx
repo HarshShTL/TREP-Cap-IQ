@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,6 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/empty-state";
+import { cn } from "@/lib/utils";
+import { LEAD_STATUS_BADGE_CLASSES } from "@/lib/constants";
 import type { Contact } from "@/types";
 
 interface ContactsTableProps {
@@ -30,20 +31,14 @@ interface ContactsTableProps {
 }
 
 function SortIcon({ field, sortBy, sortAsc }: { field: string; sortBy: string; sortAsc: boolean }) {
-  if (sortBy !== field) return <ChevronsUpDown className="ml-1 inline size-3.5 text-muted-foreground/50" />;
+  if (sortBy !== field)
+    return <ChevronsUpDown className="ml-1 inline size-3 text-muted-foreground/30" />;
   return sortAsc ? (
     <ChevronUp className="ml-1 inline size-3.5" />
   ) : (
     <ChevronDown className="ml-1 inline size-3.5" />
   );
 }
-
-const LEAD_STATUS_COLORS: Record<string, string> = {
-  New: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  Qualified: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  Unqualified: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  "Do Not Contact": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
 
 export function ContactsTable({
   contacts,
@@ -81,12 +76,12 @@ export function ContactsTable({
   return (
     <div className="space-y-4">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           <TableRow>
             {cols.map((col) => (
               <TableHead
                 key={col.key}
-                className="cursor-pointer select-none whitespace-nowrap"
+                className="cursor-pointer select-none whitespace-nowrap py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                 onClick={() => onSort(col.key)}
               >
                 {col.label}
@@ -97,8 +92,11 @@ export function ContactsTable({
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <TableRow key={contact.id} className="cursor-pointer">
-              <TableCell>
+            <TableRow
+              key={contact.id}
+              className="cursor-pointer transition-colors even:bg-muted/20 hover:bg-primary/5"
+            >
+              <TableCell className="py-3 px-4">
                 <Link
                   href={`/contacts/${contact.id}`}
                   className="font-medium hover:underline"
@@ -109,22 +107,24 @@ export function ContactsTable({
                   <p className="text-xs text-muted-foreground">{contact.email}</p>
                 )}
               </TableCell>
-              <TableCell className="text-sm">{contact.company_name ?? "—"}</TableCell>
-              <TableCell className="text-sm">{contact.job_title ?? "—"}</TableCell>
-              <TableCell>
+              <TableCell className="py-3 px-4 text-sm">{contact.company_name ?? "—"}</TableCell>
+              <TableCell className="py-3 px-4 text-sm">{contact.job_title ?? "—"}</TableCell>
+              <TableCell className="py-3 px-4">
                 {contact.lead_status ? (
-                  <Badge
-                    variant="secondary"
-                    className={LEAD_STATUS_COLORS[contact.lead_status] ?? ""}
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                      LEAD_STATUS_BADGE_CLASSES[contact.lead_status] ?? "bg-gray-100 text-gray-700"
+                    )}
                   >
                     {contact.lead_status}
-                  </Badge>
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
-              <TableCell className="text-sm">{contact.capital_type ?? "—"}</TableCell>
-              <TableCell className="text-sm">
+              <TableCell className="py-3 px-4 text-sm">{contact.capital_type ?? "—"}</TableCell>
+              <TableCell className="py-3 px-4 text-sm">
                 {contact.last_interaction_date
                   ? format(new Date(contact.last_interaction_date), "MMM d, yyyy")
                   : "—"}

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -11,11 +12,11 @@ import {
   Briefcase,
   Users,
   DollarSign,
-  Sparkles,
 } from "lucide-react";
 import {
   BarChart,
   Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
@@ -27,7 +28,6 @@ import {
 } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   useDashboardStats,
   useDealsByStage,
@@ -35,8 +35,10 @@ import {
   useRecentDeals,
   useRecentActivities,
 } from "@/hooks/use-dashboard";
-import { formatCurrency } from "@/lib/constants";
+import { formatCurrency, STAGE_BADGE_CLASSES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
+// ─── Colors ───────────────────────────────────────────────────────────────────
 const CHART_COLORS = [
   "#1a3a6b",
   "#f59e0b",
@@ -48,18 +50,7 @@ const CHART_COLORS = [
   "#d97706",
 ];
 
-function getStageBadgeVariant(
-  stage: string
-): "default" | "secondary" | "outline" | "destructive" {
-  const lower = stage.toLowerCase();
-  if (lower === "closed") return "destructive";
-  if (lower === "pass") return "outline";
-  if (lower.includes("term") || lower.includes("loi") || lower.includes("sign"))
-    return "default";
-  if (lower.includes("due") || lower.includes("diligence")) return "secondary";
-  return "outline";
-}
-
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getActivityIcon(type: string) {
   const lower = (type ?? "").toLowerCase();
   if (lower.includes("call") || lower.includes("phone"))
@@ -81,32 +72,49 @@ function Skeleton({ className = "" }: { className?: string }) {
 }
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
-interface KpiCardProps {
+function KpiCard({
+  title,
+  value,
+  icon,
+  loading,
+  accentColor,
+  iconBg,
+  iconColor,
+}: {
   title: string;
   value: string | number;
   icon: React.ReactNode;
   loading?: boolean;
-}
-
-function KpiCard({ title, value, icon, loading }: KpiCardProps) {
+  accentColor: string;
+  iconBg: string;
+  iconColor: string;
+}) {
   return (
-    <Card>
+    <Card
+      className={cn(
+        "border-l-4 hover:shadow-md transition-shadow",
+        accentColor,
+      )}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
-          <span className="text-muted-foreground/60">{icon}</span>
+          <span className={cn("rounded-full p-2", iconBg, iconColor)}>
+            {icon}
+          </span>
         </div>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-9 w-28" />
         ) : (
-          <p className="text-3xl font-semibold tracking-tight text-foreground">
+          <p className="text-3xl font-bold tracking-tight text-foreground">
             {value}
           </p>
         )}
+        <p className="text-sm text-muted-foreground mt-0.5">{title}</p>
       </CardContent>
     </Card>
   );
@@ -124,10 +132,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Dashboard
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-0.5">
           Overview of your investor relations pipeline.
         </p>
       </div>
@@ -139,20 +147,27 @@ export default function DashboardPage() {
           value={stats.data?.activeDeals ?? 0}
           icon={<Briefcase className="size-4" />}
           loading={stats.isLoading}
+          accentColor="border-l-blue-500"
+          iconBg="bg-blue-50 dark:bg-blue-900/20"
+          iconColor="text-blue-600 dark:text-blue-400"
         />
         <KpiCard
           title="Active Contacts"
           value={stats.data?.activeContacts ?? 0}
           icon={<Users className="size-4" />}
           loading={stats.isLoading}
+          accentColor="border-l-green-500"
+          iconBg="bg-green-50 dark:bg-green-900/20"
+          iconColor="text-green-600 dark:text-green-400"
         />
         <KpiCard
           title="Total Deal Amount"
-          value={
-            stats.data ? formatCurrency(stats.data.totalAmount) : "$0"
-          }
+          value={stats.data ? formatCurrency(stats.data.totalAmount) : "$0"}
           icon={<DollarSign className="size-4" />}
           loading={stats.isLoading}
+          accentColor="border-l-amber-500"
+          iconBg="bg-amber-50 dark:bg-amber-900/20"
+          iconColor="text-amber-600 dark:text-amber-400"
         />
       </div>
 
@@ -176,6 +191,11 @@ export default function DashboardPage() {
                   data={dealsByStage.data}
                   margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
                 >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="stage"
                     tick={{ fontSize: 11 }}
@@ -198,7 +218,7 @@ export default function DashboardPage() {
                   <Bar
                     dataKey="count"
                     name="Deals"
-                    fill="#1a3a6b"
+                    fill="#1e3a5f"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -228,9 +248,10 @@ export default function DashboardPage() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    innerRadius={55}
+                    outerRadius={85}
                     label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
+                      percent > 0.05 ? name : ""
                     }
                     labelLine={false}
                   >
@@ -281,24 +302,33 @@ export default function DashboardPage() {
             ) : (
               <ul className="divide-y divide-border">
                 {recentDeals.data.map((deal) => (
-                  <li key={deal.id} className="flex items-center gap-3 px-4 py-3">
+                  <li
+                    key={deal.id}
+                    className="flex items-center gap-3 px-4 py-3"
+                  >
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/deals/${deal.id}`}
-                        className="truncate text-sm font-medium text-foreground hover:text-primary hover:underline"
+                        className="truncate text-sm font-medium text-foreground hover:text-primary hover:underline block"
                       >
                         {deal.name}
                       </Link>
                       {deal.location && (
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="truncate text-xs text-muted-foreground mt-0.5">
                           {deal.location}
                         </p>
                       )}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      <Badge variant={getStageBadgeVariant(deal.stage)}>
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                          STAGE_BADGE_CLASSES[deal.stage] ??
+                            "bg-gray-100 text-gray-700",
+                        )}
+                      >
                         {deal.stage}
-                      </Badge>
+                      </span>
                       {deal.amount != null && (
                         <span className="text-xs tabular-nums text-muted-foreground">
                           {formatCurrency(deal.amount)}
@@ -341,14 +371,14 @@ export default function DashboardPage() {
                       key={activity.id}
                       className="flex items-start gap-3 px-4 py-3"
                     >
-                      <span className="mt-0.5 shrink-0 text-muted-foreground">
+                      <span className="mt-0.5 shrink-0 rounded-full p-1.5 bg-muted text-muted-foreground">
                         {getActivityIcon(activity.type)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-foreground">
+                        <p className="truncate text-sm font-medium text-foreground">
                           {activity.subject}
                         </p>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                           {linkedName && (
                             <>
                               <span className="truncate">{linkedName}</span>
@@ -356,18 +386,13 @@ export default function DashboardPage() {
                             </>
                           )}
                           <span className="shrink-0">
-                            {formatDistanceToNow(new Date(activity.created_at), {
-                              addSuffix: true,
-                            })}
+                            {formatDistanceToNow(
+                              new Date(activity.created_at),
+                              { addSuffix: true },
+                            )}
                           </span>
                         </div>
                       </div>
-                      {activity.is_ai_generated && (
-                        <Badge variant="secondary" className="shrink-0 gap-1">
-                          <Sparkles className="size-2.5" />
-                          AI
-                        </Badge>
-                      )}
                     </li>
                   );
                 })}

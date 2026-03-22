@@ -53,7 +53,6 @@ const schema = z.object({
   country: z.string().optional(),
   database_source: z.string().optional(),
   contact_owner: z.string().optional(),
-  linkedin: z.string().optional(),
   website: z.string().optional(),
 });
 
@@ -143,7 +142,6 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
       time_zone: null,
       industry: null,
       website: data.website || null,
-      linkedin: data.linkedin || null,
       last_interaction_date: null,
       custom_fields: null,
     });
@@ -315,13 +313,6 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
                 <div className="space-y-1">
                   <label className="text-sm font-medium">Database Source</label>
                   <Input {...register("database_source")} placeholder="Referral, LinkedIn, etc." />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">LinkedIn URL</label>
-                  <Input
-                    {...register("linkedin")}
-                    placeholder="https://linkedin.com/in/username"
-                  />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium">Website</label>

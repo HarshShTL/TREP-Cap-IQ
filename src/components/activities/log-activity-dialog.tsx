@@ -66,14 +66,10 @@ export function LogActivityDialog({
     await createActivity.mutateAsync({
       type: data.type,
       subject: data.subject,
-      body: data.body ?? null,
-      date: data.date ?? null,
+      body: data.body || null,
+      date: data.date || null,
       deal_id: dealId ?? null,
       contact_id: contactId ?? null,
-      company_id: companyId ?? null,
-      is_ai_generated: false,
-      created_by: null,
-      custom_fields: null,
     });
     reset();
     onOpenChange(false);

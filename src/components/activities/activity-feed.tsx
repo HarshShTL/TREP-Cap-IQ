@@ -15,9 +15,9 @@ import {
   MoreHorizontal,
   Trash2,
   Plus,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -64,7 +64,7 @@ export function ActivityFeed({
   const deleteActivity = useDeleteActivity();
 
   const params = { dealId, contactId, companyId, type: typeFilter, search, cursor, limit: 20 };
-  const { data, isLoading } = useActivities(params);
+  const { data, isLoading, error } = useActivities(params);
 
   React.useEffect(() => {
     if (!cursor) {
@@ -98,6 +98,15 @@ export function ActivityFeed({
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+        <AlertCircle className="mt-0.5 size-4 shrink-0" />
+        <span>Failed to load activities: {(error as Error).message}</span>
+      </div>
+    );
+  }
+
   if (!allActivities.length && !isLoading) {
     return (
       <EmptyState
@@ -116,96 +125,106 @@ export function ActivityFeed({
   }
 
   return (
-    <div className="space-y-2">
-      {allActivities.map((activity) => {
-        const isExpanded = expanded.has(activity.id);
-        const hasLongBody = (activity.body?.length ?? 0) > 150;
-        const displayBody =
-          hasLongBody && !isExpanded ? activity.body!.slice(0, 150) + "…" : activity.body;
-        const ts = activity.date ?? activity.created_at;
+    <>
+      <div className="divide-y divide-border">
+        {allActivities.map((activity) => {
+          const isExpanded = expanded.has(activity.id);
+          const hasLongBody = (activity.body?.length ?? 0) > 150;
+          const displayBody =
+            hasLongBody && !isExpanded
+              ? activity.body!.slice(0, 150) + "…"
+              : activity.body;
+          const ts = activity.date ?? activity.created_at;
 
-        return (
-          <div key={activity.id} className="rounded-lg border bg-card p-3 text-sm">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex min-w-0 items-start gap-2">
-                <span className="mt-0.5 shrink-0 text-muted-foreground">
-                  {TYPE_ICONS[activity.type] ?? <FileText className="size-4" />}
-                </span>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate font-medium">{activity.subject}</span>
-                    {activity.is_ai_generated && (
-                      <Badge variant="secondary" className="gap-1 text-xs">
-                        <Sparkles className="size-3" /> AI
-                      </Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs">
-                      {activity.type}
-                    </Badge>
-                  </div>
-                  {displayBody && (
-                    <p className="mt-1 whitespace-pre-wrap break-words text-muted-foreground">
-                      {displayBody}
-                      {hasLongBody && (
-                        <button
-                          className="ml-1 inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
-                          onClick={() => toggleExpand(activity.id)}
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronUp className="size-3" />
-                              Less
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="size-3" />
-                              More
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </p>
-                  )}
-                  <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    {activity.contacts && (
-                      <span>
-                        {activity.contacts.first_name} {activity.contacts.last_name}
+          return (
+            <div key={activity.id} className="flex gap-3 py-3 px-0">
+              {/* Left: type icon circle */}
+              <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                {TYPE_ICONS[activity.type] ?? <FileText className="size-4" />}
+              </div>
+
+              {/* Right: content */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    {/* Subject + badges */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {activity.subject}
                       </span>
+                      <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs text-muted-foreground">
+                        {activity.type}
+                      </span>
+                    </div>
+
+                    {/* Body */}
+                    {displayBody && (
+                      <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap break-words">
+                        {displayBody}
+                        {hasLongBody && (
+                          <button
+                            className="ml-1 inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
+                            onClick={() => toggleExpand(activity.id)}
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp className="size-3" />
+                                Less
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="size-3" />
+                                More
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </p>
                     )}
-                    {activity.deals && <span>{activity.deals.name}</span>}
-                    {activity.companies && <span>{activity.companies.name}</span>}
-                    <span title={format(new Date(ts), "PPP p")}>
-                      {formatDistanceToNow(new Date(ts), { addSuffix: true })}
-                    </span>
+
+                    {/* Meta row */}
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      {activity.contacts && (
+                        <span>
+                          {activity.contacts.first_name} {activity.contacts.last_name}
+                        </span>
+                      )}
+                      {activity.deals && <span>{activity.deals.name}</span>}
+                      <span title={format(new Date(ts), "PPP p")}>
+                        {formatDistanceToNow(new Date(ts), { addSuffix: true })}
+                      </span>
+                    </div>
                   </div>
+
+                  {/* Actions menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-7 shrink-0">
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setDeleteId(activity.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 size-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-7 shrink-0">
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => setDeleteId(activity.id)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="mr-2 size-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {(data?.length ?? 0) === 20 && (
         <Button
           variant="outline"
           size="sm"
-          className="w-full"
+          className="mt-2 w-full"
           onClick={() => {
             const last = allActivities[allActivities.length - 1];
             if (last) setCursor(last.created_at);
@@ -230,6 +249,6 @@ export function ActivityFeed({
           }
         }}
       />
-    </div>
+    </>
   );
 }

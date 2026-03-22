@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -109,7 +109,7 @@ export function InlineEditField({
   }
 
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={cn("group space-y-1", className)}>
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       {editing ? (
         <div className="relative">
@@ -139,22 +139,26 @@ export function InlineEditField({
           )}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={handleEdit}
-          className="min-h-[28px] w-full cursor-text rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {saving ? (
-            <span className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
-              Saving…
-            </span>
-          ) : displayValue ? (
-            <span>{displayValue}</span>
-          ) : (
-            <span className="text-muted-foreground/60">{placeholder}</span>
-          )}
-        </button>
+        <div className="flex min-h-[28px] items-center justify-between gap-2 rounded-md px-2 py-1">
+          <span className={cn("text-sm", displayValue ? "text-foreground" : "text-muted-foreground/50")}>
+            {saving ? (
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="size-3 animate-spin" />
+                Saving…
+              </span>
+            ) : (
+              displayValue ?? placeholder
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+            title={`Edit ${label}`}
+          >
+            <Pencil className="size-3" />
+          </button>
+        </div>
       )}
     </div>
   );

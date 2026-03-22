@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { AiChatbot } from "@/components/ai-chatbot";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -39,6 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1 p-6 md:p-8">{children}</main>
       </div>
+      <AiChatbot />
     </div>
   );
 }

@@ -121,9 +121,9 @@ export default function CompanyDetailPage({ params }: Props) {
         <div className="min-h-[400px] rounded-xl border bg-card p-4">
           <Tabs defaultValue="activities">
             <div className="mb-4 flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="activities">Activities</TabsTrigger>
-                <TabsTrigger value="contacts">Contacts</TabsTrigger>
+              <TabsList className="h-9 gap-1 bg-muted/50 p-1">
+                <TabsTrigger value="activities" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Activities</TabsTrigger>
+                <TabsTrigger value="contacts" className="rounded-full px-4 text-sm data-active:bg-[hsl(220,70%,22%)] data-active:text-white data-active:shadow-none">Contacts</TabsTrigger>
               </TabsList>
               <Button size="sm" onClick={() => setLogOpen(true)}>
                 <Plus className="mr-2 size-4" />
@@ -150,16 +150,6 @@ export default function CompanyDetailPage({ params }: Props) {
               </p>
             )}
             {company?.industry && <p>{company.industry}</p>}
-            {company?.linkedin && (
-              <a
-                href={company.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-primary hover:underline"
-              >
-                LinkedIn
-              </a>
-            )}
           </div>
         </div>
       </div>

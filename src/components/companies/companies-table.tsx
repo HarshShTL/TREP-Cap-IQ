@@ -30,7 +30,7 @@ interface CompaniesTableProps {
 
 function SortIcon({ field, sortBy, sortAsc }: { field: string; sortBy: string; sortAsc: boolean }) {
   if (sortBy !== field)
-    return <ChevronsUpDown className="ml-1 inline size-3.5 text-muted-foreground/50" />;
+    return <ChevronsUpDown className="ml-1 inline size-3 text-muted-foreground/30" />;
   return sortAsc ? (
     <ChevronUp className="ml-1 inline size-3.5" />
   ) : (
@@ -64,28 +64,32 @@ export function CompaniesTable({
     );
   }
 
-  const cols: { key: string; label: string }[] = [
-    { key: "name", label: "Name" },
-    { key: "company_type", label: "Type" },
-    { key: "industry", label: "Industry" },
-    { key: "hq_city", label: "HQ City" },
-    { key: "aum", label: "AUM" },
-    { key: "website", label: "Website" },
+  const cols: { key: string; label: string; sortable?: boolean }[] = [
+    { key: "name", label: "Name", sortable: true },
+    { key: "company_type", label: "Type", sortable: true },
+    { key: "industry", label: "Industry", sortable: true },
+    { key: "hq_city", label: "HQ City", sortable: true },
+    { key: "aum", label: "AUM", sortable: true },
+    { key: "website", label: "Website", sortable: false },
   ];
 
   return (
     <div className="space-y-4">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           <TableRow>
             {cols.map((col) => (
               <TableHead
                 key={col.key}
-                className={col.key !== "website" ? "cursor-pointer select-none whitespace-nowrap" : ""}
-                onClick={col.key !== "website" ? () => onSort(col.key) : undefined}
+                className={
+                  col.sortable
+                    ? "cursor-pointer select-none whitespace-nowrap py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    : "py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                }
+                onClick={col.sortable ? () => onSort(col.key) : undefined}
               >
                 {col.label}
-                {col.key !== "website" && (
+                {col.sortable && (
                   <SortIcon field={col.key} sortBy={sortBy} sortAsc={sortAsc} />
                 )}
               </TableHead>
@@ -94,8 +98,11 @@ export function CompaniesTable({
         </TableHeader>
         <TableBody>
           {companies.map((company) => (
-            <TableRow key={company.id} className="cursor-pointer">
-              <TableCell>
+            <TableRow
+              key={company.id}
+              className="cursor-pointer transition-colors even:bg-muted/20 hover:bg-primary/5"
+            >
+              <TableCell className="py-3 px-4">
                 <Link href={`/companies/${company.id}`} className="font-medium hover:underline">
                   {company.name}
                 </Link>
@@ -103,15 +110,15 @@ export function CompaniesTable({
                   <p className="text-xs text-muted-foreground">{company.domain}</p>
                 )}
               </TableCell>
-              <TableCell className="text-sm">{company.company_type ?? "—"}</TableCell>
-              <TableCell className="text-sm">{company.industry ?? "—"}</TableCell>
-              <TableCell className="text-sm">
+              <TableCell className="py-3 px-4 text-sm">{company.company_type ?? "—"}</TableCell>
+              <TableCell className="py-3 px-4 text-sm">{company.industry ?? "—"}</TableCell>
+              <TableCell className="py-3 px-4 text-sm">
                 {[company.hq_city, company.hq_state].filter(Boolean).join(", ") || "—"}
               </TableCell>
-              <TableCell className="text-sm tabular-nums">
+              <TableCell className="py-3 px-4 text-sm tabular-nums">
                 {company.aum != null ? formatCurrency(company.aum) : "—"}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-3 px-4">
                 {company.website ? (
                   <a
                     href={company.website}

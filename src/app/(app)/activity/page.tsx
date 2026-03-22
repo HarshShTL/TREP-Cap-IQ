@@ -41,10 +41,10 @@ export default function ActivityPage() {
               key={type}
               onClick={() => setTypeFilter(type === "All" ? undefined : type)}
               className={cn(
-                "rounded-full border px-3 py-1 text-sm transition-colors",
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer",
                 isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border hover:bg-muted/60"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
               )}
             >
               {type}
@@ -56,7 +56,7 @@ export default function ActivityPage() {
           placeholder="Search activities..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto max-w-xs"
+          className="ml-auto max-w-64 rounded-full"
         />
       </div>
 

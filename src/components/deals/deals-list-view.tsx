@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import {
   Table,
@@ -12,10 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
-import { formatCurrency, PRIORITY_DOT_COLORS } from "@/lib/constants";
+import { formatCurrency, PRIORITY_DOT_COLORS, STAGE_BADGE_CLASSES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Deal } from "@/types";
 
@@ -42,7 +41,7 @@ function SortHeader({
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+      className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
     >
       {label}
       {active ? (
@@ -52,7 +51,7 @@ function SortHeader({
           <ChevronDownIcon className="size-3" />
         )
       ) : (
-        <span className="size-3" />
+        <ChevronsUpDown className="size-3 text-muted-foreground/30" />
       )}
     </button>
   );
@@ -85,10 +84,15 @@ export function DealsListView({ deals, loading }: DealsListViewProps) {
   if (loading) {
     return (
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           <TableRow>
             {["Name", "Stage", "Asset Class", "Location", "Amount", "Close Date", "Priority"].map((h) => (
-              <TableHead key={h}>{h}</TableHead>
+              <TableHead
+                key={h}
+                className="py-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                {h}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -108,35 +112,38 @@ export function DealsListView({ deals, loading }: DealsListViewProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           <TableRow>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Name" sortKey="name" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Stage" sortKey="stage" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Asset Class" sortKey="asset_class" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Location" sortKey="location" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Amount" sortKey="amount" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Close Date" sortKey="expected_close_date" currentSort={sort} onSort={handleSort} />
             </TableHead>
-            <TableHead>
+            <TableHead className="py-3 px-4">
               <SortHeader label="Priority" sortKey="priority" currentSort={sort} onSort={handleSort} />
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sorted.map((deal) => (
-            <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/40">
-              <TableCell>
+            <TableRow
+              key={deal.id}
+              className="cursor-pointer transition-colors even:bg-muted/20 hover:bg-primary/5"
+            >
+              <TableCell className="py-3 px-4">
                 <Link
                   href={`/deals/${deal.id}`}
                   className="font-medium text-foreground hover:text-primary hover:underline"
@@ -144,24 +151,35 @@ export function DealsListView({ deals, loading }: DealsListViewProps) {
                   {deal.name}
                 </Link>
               </TableCell>
-              <TableCell>
-                <Badge variant="secondary">{deal.stage}</Badge>
+              <TableCell className="py-3 px-4">
+                {deal.stage ? (
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                      STAGE_BADGE_CLASSES[deal.stage] ?? "bg-gray-100 text-gray-700"
+                    )}
+                  >
+                    {deal.stage}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                 {deal.asset_class ?? "—"}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                 {deal.location ?? "—"}
               </TableCell>
-              <TableCell className="tabular-nums text-muted-foreground">
+              <TableCell className="py-3 px-4 tabular-nums text-sm text-muted-foreground">
                 {formatCurrency(deal.amount)}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="py-3 px-4 text-sm text-muted-foreground">
                 {deal.expected_close_date
                   ? format(new Date(deal.expected_close_date), "MMM d, yyyy")
                   : "—"}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-3 px-4">
                 {deal.priority ? (
                   <div className="flex items-center gap-1.5 text-sm">
                     <span

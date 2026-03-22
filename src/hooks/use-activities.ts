@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { Activity } from "@/types";
 
 const ACTIVITIES_SELECT =
-  "id, type, subject, body, date, deal_id, contact_id, company_id, is_ai_generated, created_by, custom_fields, created_at, updated_at, deals(id, name), contacts(id, first_name, last_name), companies(id, name)";
+  "id, type, subject, body, date, deal_id, contact_id, created_at, deals(id, name), contacts(id, first_name, last_name)";
 
 interface ActivitiesParams {
   dealId?: string;
@@ -33,7 +33,6 @@ export function useActivities(params: ActivitiesParams = {}) {
 
       if (dealId) q = q.eq("deal_id", dealId);
       if (contactId) q = q.eq("contact_id", contactId);
-      if (companyId) q = q.eq("company_id", companyId);
       if (type) q = q.eq("type", type);
       if (search) {
         q = q.or(`subject.ilike.%${search}%,body.ilike.%${search}%`);
@@ -51,13 +50,12 @@ export function useCreateActivity() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (
-      activity: Omit<Activity, "id" | "created_at" | "updated_at" | "deals" | "contacts" | "companies">
+      activity: Omit<Activity, "id" | "created_at" | "updated_at" | "deals" | "contacts">
     ) => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("activities")
-        .insert({ ...activity, created_by: user?.id })
+        .insert(activity)
         .select(ACTIVITIES_SELECT)
         .single();
       if (error) throw error;

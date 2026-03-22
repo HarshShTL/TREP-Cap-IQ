@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDeal, useUpdateDeal } from "@/hooks/use-deals";
 import { usePipelineStages } from "@/hooks/use-pipeline-config";
 import { useSchemaConfig } from "@/hooks/use-schema-config";
+import { useProfiles } from "@/hooks/use-profile";
 import { formatCurrency, PRIORITIES, ASSET_CLASSES, DEAL_TYPES } from "@/lib/constants";
 import type { Deal } from "@/types";
 
@@ -17,6 +18,7 @@ export function DealSummaryPanel({ dealId }: DealSummaryPanelProps) {
   const updateDeal = useUpdateDeal();
   const stages = usePipelineStages();
   const { data: schema } = useSchemaConfig("deal");
+  const { data: profiles = [] } = useProfiles();
 
   if (isLoading) {
     return (
@@ -34,10 +36,17 @@ export function DealSummaryPanel({ dealId }: DealSummaryPanelProps) {
     await updateDeal.mutateAsync({ id: dealId, [field]: value || null });
   };
 
+  const resolveProfile = (id: string | null) =>
+    profiles.find((p) => p.id === id)?.full_name ?? id ?? "";
+
   const customFields = schema?.field_definitions ?? [];
 
   return (
     <div className="space-y-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+        Deal Details
+      </p>
+
       <InlineEditField
         label="Stage"
         value={deal.stage}
@@ -85,24 +94,35 @@ export function DealSummaryPanel({ dealId }: DealSummaryPanelProps) {
         type="date"
         onSave={save("expected_close_date")}
       />
-      <InlineEditField
-        label="Deal Owner"
-        value={deal.deal_owner ?? ""}
-        type="text"
-        onSave={save("deal_owner")}
-      />
-      <InlineEditField
-        label="Collaborator"
-        value={deal.deal_collaborator ?? ""}
-        type="text"
-        onSave={save("deal_collaborator")}
-      />
-      <InlineEditField
-        label="Description"
-        value={deal.description ?? ""}
-        type="textarea"
-        onSave={save("description")}
-      />
+
+      <div className="border-t border-border/40 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+          Team
+        </p>
+        <div className="space-y-4">
+          <InlineEditField
+            label="Deal Owner"
+            value={resolveProfile(deal.deal_owner)}
+            type="text"
+            onSave={save("deal_owner")}
+          />
+          <InlineEditField
+            label="Collaborator"
+            value={resolveProfile(deal.deal_collaborator)}
+            type="text"
+            onSave={save("deal_collaborator")}
+          />
+        </div>
+      </div>
+
+      <div className="border-t border-border/40 pt-4">
+        <InlineEditField
+          label="Description"
+          value={deal.description ?? ""}
+          type="textarea"
+          onSave={save("description")}
+        />
+      </div>
 
       {customFields.length > 0 && (
         <>

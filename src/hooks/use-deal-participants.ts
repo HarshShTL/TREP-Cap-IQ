@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import type { DealParticipant } from "@/types";
 
 const PARTICIPANT_SELECT =
-  "id, deal_id, contact_id, role, status, commitment_amount, nda_sent_date, nda_signed_date, last_activity_date, contacts(id, first_name, last_name, email, job_title, company_name)";
+  "id, deal_id, contact_id, role, status, commitment_amount, nda_sent_date, nda_signed_date, contacts(id, first_name, last_name, email, job_title, company_name)";
 
 export function useDealParticipants(dealId: string) {
   return useQuery({
@@ -34,7 +34,7 @@ export function useContactParticipants(contactId: string) {
       const { data, error } = await supabase
         .from("deal_participants")
         .select(
-          "id, deal_id, contact_id, role, status, commitment_amount, nda_sent_date, nda_signed_date, last_activity_date, deals(id, name, stage)"
+          "id, deal_id, contact_id, role, status, commitment_amount, nda_sent_date, nda_signed_date, deals(id, name, stage)"
         )
         .eq("contact_id", contactId);
       if (error) throw error;

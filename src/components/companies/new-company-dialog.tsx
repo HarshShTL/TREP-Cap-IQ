@@ -34,7 +34,6 @@ const schema = z.object({
   website: z.string().optional(),
   company_type: z.string().optional(),
   industry: z.string().optional(),
-  linkedin: z.string().optional(),
   hq_city: z.string().optional(),
   hq_state: z.string().optional(),
   hq_country: z.string().optional(),
@@ -107,7 +106,6 @@ export function NewCompanyDialog({ open, onOpenChange }: NewCompanyDialogProps) 
       domain: null,
       company_type: data.company_type || null,
       industry: data.industry || null,
-      linkedin: data.linkedin || null,
       hq_address: null,
       hq_city: data.hq_city || null,
       hq_state: data.hq_state || null,
@@ -157,10 +155,6 @@ export function NewCompanyDialog({ open, onOpenChange }: NewCompanyDialogProps) 
             <div className="space-y-1">
               <label className="text-sm font-medium">Website</label>
               <Input {...register("website")} placeholder="https://example.com" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">LinkedIn</label>
-              <Input {...register("linkedin")} placeholder="https://linkedin.com/company/..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">

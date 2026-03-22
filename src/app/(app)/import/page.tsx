@@ -50,7 +50,6 @@ const ENTITY_FIELDS: Record<EntityType, { key: string; label: string; required?:
     { key: "city", label: "City" },
     { key: "state", label: "State" },
     { key: "country", label: "Country" },
-    { key: "linkedin", label: "LinkedIn" },
     { key: "database_source", label: "Database Source" },
     { key: "contact_owner", label: "Contact Owner" },
   ],
@@ -64,7 +63,6 @@ const ENTITY_FIELDS: Record<EntityType, { key: string; label: string; required?:
     { key: "hq_country", label: "HQ Country" },
     { key: "capital_type", label: "Capital Type" },
     { key: "aum", label: "AUM" },
-    { key: "linkedin", label: "LinkedIn" },
   ],
   deals: [
     { key: "name", label: "Deal Name", required: true },

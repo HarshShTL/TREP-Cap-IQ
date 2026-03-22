@@ -37,7 +37,7 @@ import {
 } from "@/hooks/use-deal-participants";
 import { useDebounce } from "@/hooks/use-debounce";
 import { createClient } from "@/lib/supabase/client";
-import { formatCurrency, PARTICIPANT_ROLES, PARTICIPANT_STATUSES } from "@/lib/constants";
+import { formatCurrency, PARTICIPANT_ROLES, PARTICIPANT_STATUSES, PARTICIPANT_STATUS_BADGE_CLASSES } from "@/lib/constants";
 import type { Contact } from "@/types";
 
 function ContactSearchResult({
@@ -98,13 +98,12 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
       )
       .is("deleted_at", null)
       .limit(8)
-      .then(({ data }) => {
+      .then(({ data, error: _e }) => {
         if (!cancelled) {
           setResults((data ?? []) as unknown as Contact[]);
           setSearching(false);
         }
-      })
-      .catch(() => {
+      }, () => {
         if (!cancelled) setSearching(false);
       });
     return () => {
@@ -128,7 +127,6 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
       commitment_amount: null,
       nda_sent_date: null,
       nda_signed_date: null,
-      last_activity_date: null,
     });
     onOpenChange(false);
     setSearch("");
@@ -286,8 +284,14 @@ export function DealParticipantsTab({ dealId }: DealParticipantsTabProps) {
                     <p className="text-xs text-muted-foreground">{p.contacts.company_name}</p>
                   )}
                 </TableCell>
-                <TableCell>{p.role ?? "—"}</TableCell>
-                <TableCell>{p.status ?? "—"}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{p.role ?? "—"}</TableCell>
+                <TableCell>
+                  {p.status ? (
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${PARTICIPANT_STATUS_BADGE_CLASSES[p.status] ?? "bg-muted text-muted-foreground"}`}>
+                      {p.status}
+                    </span>
+                  ) : "—"}
+                </TableCell>
                 <TableCell>
                   {p.commitment_amount != null ? formatCurrency(p.commitment_amount) : "—"}
                 </TableCell>
