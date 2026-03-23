@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { usePipelineConfig, useUpdatePipelineConfig } from "@/hooks/use-pipeline-config";
 import { useDeals } from "@/hooks/use-deals";
+import { DEAL_STAGES } from "@/lib/constants";
 import { labelToKey } from "@/lib/utils";
 import type { PipelineStage } from "@/types";
 
@@ -48,6 +49,14 @@ export function PipelineStagesTab() {
     if (config?.stages) {
       setStages(config.stages);
       setDirty(false);
+    } else if (config === null) {
+      // If no config, initialize with default stages
+      const defaultStages = DEAL_STAGES.map((label) => ({
+        key: labelToKey(label),
+        label,
+      }));
+      setStages(defaultStages);
+      setDirty(true); // Mark as dirty to encourage saving
     }
   }, [config]);
 

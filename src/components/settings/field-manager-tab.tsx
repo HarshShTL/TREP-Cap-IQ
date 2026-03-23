@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { useSchemaConfig, useUpdateSchemaConfig } from "@/hooks/use-schema-config";
+import { SYSTEM_FIELDS } from "@/lib/system-fields";
 import { labelToKey, cn } from "@/lib/utils";
 import type { EntityType, FieldDefinition, FieldType } from "@/types";
 
@@ -338,17 +339,31 @@ export function FieldManagerTab({ entityType }: FieldManagerTabProps) {
   const [dirty, setDirty] = React.useState(false);
 
   React.useEffect(() => {
-    if (schema?.field_definitions) {
-      setFields(schema.field_definitions);
-      setDirty(false);
+    const systemFields = SYSTEM_FIELDS[entityType];
+    const customFields = schema?.field_definitions ?? [];
+    const allFields = [...systemFields, ...customFields].sort(
+      (a, b) => (a.order ?? Infinity) - (b.order ?? Infinity),
+    );
+    setFields(allFields);
+    setDirty(false);
+    if (!schema) {
+      setDirty(true);
     }
-  }, [schema]);
+  }, [schema, entityType]);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+
     const next = [...fields];
     const [moved] = next.splice(result.source.index, 1);
     next.splice(result.destination.index, 0, moved);
+
+    const systemFieldsCount = SYSTEM_FIELDS[entityType].length;
+    if (result.destination.index < systemFieldsCount && !moved.locked) {
+      toast.error("Custom fields cannot be moved above system fields.");
+      return;
+    }
+
     setFields(next.map((f, i) => ({ ...f, order: i })));
     setDirty(true);
   };
@@ -377,7 +392,8 @@ export function FieldManagerTab({ entityType }: FieldManagerTabProps) {
   };
 
   const handleSave = async () => {
-    await updateSchema.mutateAsync({ entityType, fieldDefinitions: fields });
+    const customFields = fields.filter((f) => !f.locked);
+    await updateSchema.mutateAsync({ entityType, fieldDefinitions: customFields });
     setDirty(false);
     toast.success("Fields saved");
   };
@@ -445,7 +461,12 @@ export function FieldManagerTab({ entityType }: FieldManagerTabProps) {
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
               {fields.map((field, index) => (
-                <Draggable key={field.key} draggableId={field.key} index={index}>
+                <Draggable
+                  key={field.key}
+                  draggableId={field.key}
+                  index={index}
+                  isDragDisabled={field.locked}
+                >
                   {(prov, snap) => (
                     <div
                       ref={prov.innerRef}
@@ -460,7 +481,7 @@ export function FieldManagerTab({ entityType }: FieldManagerTabProps) {
                         {...prov.dragHandleProps}
                         className={cn(
                           "cursor-grab text-muted-foreground hover:text-foreground",
-                          field.locked && "opacity-30",
+                          field.locked && "cursor-not-allowed opacity-30",
                         )}
                       >
                         <GripVertical className="size-4" />

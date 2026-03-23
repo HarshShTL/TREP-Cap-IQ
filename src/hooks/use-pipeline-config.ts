@@ -16,7 +16,7 @@ export function usePipelineConfig() {
       const { data } = await supabase
         .from("pipeline_config")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       return data as PipelineConfig | null;
