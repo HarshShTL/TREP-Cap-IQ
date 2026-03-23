@@ -121,3 +121,13 @@ export function getFilePublicUrl(storageKey: string): string {
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storageKey);
   return data.publicUrl;
 }
+
+/** Returns a signed URL (1-hour expiry) for a storage key. */
+export async function getFileSignedUrl(storageKey: string): Promise<string> {
+  const supabase = createClient();
+  const { data, error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .createSignedUrl(storageKey, 3600);
+  if (error || !data?.signedUrl) throw error ?? new Error("Failed to create signed URL");
+  return data.signedUrl;
+}

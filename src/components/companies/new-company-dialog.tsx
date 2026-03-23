@@ -68,7 +68,7 @@ function SelectField({
       <label className="text-sm font-medium">{label}</label>
       <Select
         value={value || "__none__"}
-        onValueChange={(v) => onChange(v === "__none__" ? "" : v)}
+        onValueChange={(v: string) => onChange(v === "__none__" ? "" : v)}
       >
         <SelectTrigger>
           <SelectValue placeholder={`Select ${label}`} />

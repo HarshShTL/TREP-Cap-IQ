@@ -9,43 +9,93 @@ import type { Contact } from "@/types";
 const CONTACTS_SELECT =
   "id, first_name, last_name, email, phone, job_title, company_name, company_id, lead_status, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, relationship, next_steps, database_source, email_verification, trep_capital_type_prior_outreach, trep_deal_prior_outreach, contact_owner, street_address, city, state, postal_code, country, time_zone, industry, website, last_interaction_date, custom_fields, deleted_at, updated_at, created_at";
 
-interface ContactsParams {
-  search?: string;
-  cursor?: string;
-  sortBy?: string;
-  sortAsc?: boolean;
-  limit?: number;
+// ---------- Filter types ----------
+
+export interface ContactFilter {
+  field: string;
+  operator: "equals" | "contains" | "is_empty" | "is_not_empty" | "is_any_of";
+  value?: string | string[];
 }
 
-export function useContacts(params: ContactsParams = {}) {
-  const { search = "", cursor, sortBy = "created_at", sortAsc = false, limit = 50 } = params;
+// ---------- Paginated list params ----------
+
+export interface ContactsListParams {
+  search?: string;
+  sortBy?: string;
+  sortAsc?: boolean;
+  page?: number;
+  pageSize?: number;
+  filters?: ContactFilter[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyFilters(q: any, filters: ContactFilter[]) {
+  for (const f of filters) {
+    switch (f.operator) {
+      case "equals":
+        q = q.eq(f.field, f.value as string);
+        break;
+      case "contains":
+        q = q.ilike(f.field, `%${f.value}%`);
+        break;
+      case "is_empty":
+        q = q.is(f.field, null);
+        break;
+      case "is_not_empty":
+        q = q.not(f.field, "is", null);
+        break;
+      case "is_any_of":
+        if (Array.isArray(f.value) && f.value.length > 0) {
+          q = q.in(f.field, f.value);
+        }
+        break;
+    }
+  }
+  return q;
+}
+
+// ---------- Paginated contacts with total count ----------
+
+export function useContacts(params: ContactsListParams = {}) {
+  const {
+    search = "",
+    sortBy = "created_at",
+    sortAsc = false,
+    page = 1,
+    pageSize = 100,
+    filters = [],
+  } = params;
+
   return useQuery({
-    queryKey: queryKeys.contacts.list(params),
-    queryFn: async (): Promise<Contact[]> => {
+    queryKey: queryKeys.contacts.list({ search, sortBy, sortAsc, page, pageSize, filters }),
+    queryFn: async (): Promise<{ data: Contact[]; count: number }> => {
       const supabase = createClient();
-      let q = supabase
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let q: any = supabase
         .from("contacts")
-        .select(CONTACTS_SELECT)
+        .select(CONTACTS_SELECT, { count: "exact" })
         .is("deleted_at", null)
         .order(sortBy, { ascending: sortAsc })
-        .limit(limit);
+        .range(from, to);
 
       if (search) {
         q = q.textSearch("search_vector", search, { type: "websearch" });
       }
 
-      if (cursor) {
-        q = sortAsc
-          ? q.gt(sortBy, cursor)
-          : q.lt(sortBy, cursor);
-      }
+      q = applyFilters(q, filters);
 
-      const { data, error } = await q;
+      const { data, error, count } = await q;
       if (error) throw error;
-      return (data ?? []) as Contact[];
+      return { data: (data ?? []) as Contact[], count: count ?? 0 };
     },
+    placeholderData: (prev) => prev,
   });
 }
+
+// ---------- Single contact ----------
 
 export function useContact(id: string) {
   return useQuery({
@@ -64,6 +114,8 @@ export function useContact(id: string) {
   });
 }
 
+// ---------- Mutations ----------
+
 export function useCreateContact() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -72,7 +124,6 @@ export function useCreateContact() {
     ) => {
       const supabase = createClient();
 
-      // Auto-link or create company
       let company_id = contact.company_id;
       if (!company_id && contact.company_name) {
         const { data: existing } = await supabase
@@ -136,13 +187,13 @@ export function useUpdateContact() {
       );
       return { prev };
     },
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       if (context?.prev) {
         queryClient.setQueryData(queryKeys.contacts.detail(id), context.prev);
       }
       toast.error("Failed to save contact");
     },
-    onSettled: (data, err, { id }) => {
+    onSettled: (_data, _err, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.contacts.detail(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.contacts.list() });
     },

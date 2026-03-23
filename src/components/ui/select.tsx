@@ -6,8 +6,22 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-function Select({ ...props }: SelectPrimitive.Root.Props) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />;
+interface SelectProps extends Omit<SelectPrimitive.Root.Props<string>, "onValueChange"> {
+  onValueChange?: (value: string) => void;
+}
+
+function Select({ onValueChange, ...props }: SelectProps) {
+  return (
+    <SelectPrimitive.Root
+      data-slot="select"
+      onValueChange={
+        onValueChange
+          ? (v: string | null) => onValueChange(v ?? "")
+          : undefined
+      }
+      {...props}
+    />
+  );
 }
 
 function SelectTrigger({
@@ -122,7 +136,6 @@ function SelectItem({
 function SelectContent({
   className,
   children,
-  ...props
 }: React.ComponentProps<"div">) {
   return (
     <SelectPortal>

@@ -87,7 +87,7 @@ export function LogActivityDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
             <label className="text-sm font-medium">Type</label>
-            <Select value={typeValue} onValueChange={(v) => setValue("type", v)}>
+            <Select value={typeValue} onValueChange={(v: string) => setValue("type", v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

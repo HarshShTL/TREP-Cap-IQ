@@ -81,7 +81,7 @@ export function InlineEditField({
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <Select
           value={draft}
-          onValueChange={(v) => {
+          onValueChange={(v: string) => {
             setDraft(v);
             setSaving(true);
             Promise.resolve(onSave(v)).finally(() => {
@@ -89,7 +89,7 @@ export function InlineEditField({
               setEditing(false);
             });
           }}
-          onOpenChange={(open) => {
+          onOpenChange={(open: boolean) => {
             if (!open) setEditing(false);
           }}
         >

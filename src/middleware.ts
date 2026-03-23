@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-const publicPaths = new Set(["/login"]);
+const publicPaths = new Set(["/login", "/auth/callback"]);
 
 function isProtectedPath(pathname: string) {
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return false;
@@ -22,8 +22,8 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(url, key, {
     cookieOptions: {
-      sameSite: "none",
-      secure: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       path: "/",
     },
     cookies: {
@@ -54,6 +54,18 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Role-based access control for restricted routes
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+
+    if (pathname.startsWith('/settings') && profile?.role !== 'super_admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (pathname.startsWith('/import') && profile?.role === 'read_only') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
   }
 
   return supabaseResponse;

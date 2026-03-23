@@ -218,7 +218,7 @@ export function ActivityFeed({
 
                   {/* Actions menu */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
                       <Button variant="ghost" size="icon" className="size-7 shrink-0">
                         <MoreHorizontal className="size-4" />
                       </Button>

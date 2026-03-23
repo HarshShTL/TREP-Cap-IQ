@@ -32,8 +32,8 @@ import {
 } from "@/lib/constants";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
-  stage: z.string().default("Overviews"),
+  name: z.string().min(1, "Deal name is required"),
+  stage: z.string().min(1, "Stage is required"),
   amount: z.coerce.number().optional(),
   deal_type: z.string().optional(),
   priority: z.string().optional(),
@@ -66,7 +66,7 @@ export function NewDealDialog({
     reset,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as never,
     defaultValues: { stage: defaultStage ?? "Overviews" },
   });
 
@@ -90,7 +90,7 @@ export function NewDealDialog({
           reset();
           onOpenChange(false);
         },
-      }
+      },
     );
   };
 
@@ -99,201 +99,279 @@ export function NewDealDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>New Deal</DialogTitle>
+            <DialogTitle>Create New Deal</DialogTitle>
           </DialogHeader>
 
-          <div className="mt-4 max-h-[60vh] overflow-y-auto space-y-4 pr-1">
-            {/* Name */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                Deal Name *
-              </label>
-              <Input {...register("name")} placeholder="Enter deal name" />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Stage */}
+          <div className="mt-4 max-h-[60vh] overflow-y-auto space-y-5 pr-1">
+            {/* ── Required ── */}
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Required
+              </p>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Stage</label>
-                <Controller
-                  name="stage"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DEAL_STAGES.map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-
-              {/* Priority */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Priority</label>
-                <Controller
-                  name="priority"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PRIORITIES.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Amount */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Amount ($)</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Deal Name <span className="text-destructive">*</span>
+                </label>
                 <Input
-                  type="number"
-                  {...register("amount")}
-                  placeholder="0"
+                  {...register("name")}
+                  placeholder="Enter deal name"
                 />
+                {errors.name && (
+                  <p className="text-xs text-destructive">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
-              {/* Deal Type */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Deal Type</label>
-                <Controller
-                  name="deal_type"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DEAL_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Stage <span className="text-destructive">*</span>
+                  </label>
+                  <Controller
+                    name="stage"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEAL_STAGES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.stage && (
+                    <p className="text-xs text-destructive">
+                      {errors.stage.message}
+                    </p>
                   )}
-                />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Priority
+                  </label>
+                  <Controller
+                    name="priority"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRIORITIES.map((p) => (
+                            <SelectItem key={p} value={p}>
+                              {p}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Location */}
+            {/* ── Deal Details ── */}
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Deal Details
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Amount ($)
+                  </label>
+                  <Input
+                    type="number"
+                    {...register("amount")}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Deal Type
+                  </label>
+                  <Controller
+                    name="deal_type"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEAL_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Location
+                  </label>
+                  <Controller
+                    name="location"
+                    control={control}
+                    render={({ field }) => (
+                      <AutofillInput
+                        table="deals"
+                        column="location"
+                        placeholder="City, State"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        onSelect={field.onChange}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Asset Class
+                  </label>
+                  <Controller
+                    name="asset_class"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ASSET_CLASSES.map((a) => (
+                            <SelectItem key={a} value={a}>
+                              {a}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Location</label>
-                <Controller
-                  name="location"
-                  control={control}
-                  render={({ field }) => (
-                    <AutofillInput
-                      table="deals"
-                      column="location"
-                      placeholder="City, State"
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      onSelect={field.onChange}
-                    />
-                  )}
+                <label className="text-xs font-medium text-muted-foreground">
+                  Expected Close Date
+                </label>
+                <Input
+                  type="date"
+                  {...register("expected_close_date")}
                 />
               </div>
+            </section>
 
-              {/* Asset Class */}
+            {/* ── Team ── */}
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Team
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Deal Owner
+                  </label>
+                  <Controller
+                    name="deal_owner"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign to..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {profiles.map((p) => (
+                            <SelectItem
+                              key={p.id}
+                              value={p.full_name ?? p.id}
+                            >
+                              {p.full_name ?? p.id}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Collaborator
+                  </label>
+                  <Controller
+                    name="deal_collaborator"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign to..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {profiles.map((p) => (
+                            <SelectItem
+                              key={p.id}
+                              value={p.full_name ?? p.id}
+                            >
+                              {p.full_name ?? p.id}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* ── Notes ── */}
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Notes
+              </p>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Asset Class</label>
-                <Controller
-                  name="asset_class"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ASSET_CLASSES.map((a) => (
-                          <SelectItem key={a} value={a}>{a}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                <label className="text-xs font-medium text-muted-foreground">
+                  Description
+                </label>
+                <Textarea
+                  {...register("description")}
+                  placeholder="Deal notes..."
+                  rows={3}
+                  className="resize-none"
                 />
               </div>
-            </div>
-
-            {/* Expected Close Date */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Expected Close Date</label>
-              <Input type="date" {...register("expected_close_date")} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Deal Owner</label>
-                <Controller
-                  name="deal_owner"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Assign to…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {profiles.map((p) => (
-                          <SelectItem key={p.id} value={p.full_name ?? p.id}>
-                            {p.full_name ?? p.id}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Collaborator</label>
-                <Controller
-                  name="deal_collaborator"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Assign to…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {profiles.map((p) => (
-                          <SelectItem key={p.id} value={p.full_name ?? p.id}>
-                            {p.full_name ?? p.id}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Description</label>
-              <Textarea
-                {...register("description")}
-                placeholder="Deal notes…"
-                rows={3}
-                className="resize-none"
-              />
-            </div>
+            </section>
           </div>
 
           <DialogFooter className="mt-4">
@@ -305,8 +383,12 @@ export function NewDealDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={createDeal.isPending}>
-              {createDeal.isPending ? "Creating…" : "Create Deal"}
+            <Button
+              type="submit"
+              className="bg-amber-500 hover:bg-amber-600 text-white"
+              disabled={createDeal.isPending}
+            >
+              {createDeal.isPending ? "Creating..." : "Create Deal"}
             </Button>
           </DialogFooter>
         </form>

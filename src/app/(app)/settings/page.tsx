@@ -3,137 +3,27 @@
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/page-header";
-import { EntityAvatar } from "@/components/ui/entity-avatar";
 import { FieldManagerTab } from "@/components/settings/field-manager-tab";
 import { PipelineStagesTab } from "@/components/settings/pipeline-stages-tab";
-import { useIsAdmin, useProfiles } from "@/hooks/use-profile";
-import { cn } from "@/lib/utils";
-import { Shield, Users, Eye } from "lucide-react";
+import { UserManagementTab } from "@/components/settings/user-management-tab";
+import { useIsAdmin } from "@/hooks/use-profile";
+import {
+  Users,
+  GitBranch,
+  FileText,
+  Contact,
+  Building2,
+  Settings,
+} from "lucide-react";
 
-const ROLE_BADGE_CLASSES: Record<string, string> = {
-  super_admin: "bg-amber-50 text-amber-700 border border-amber-200",
-  user: "bg-blue-50 text-blue-700 border border-blue-200",
-  read_only: "bg-slate-50 text-slate-600 border border-slate-200",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  super_admin: "Super Admin",
-  user: "User",
-  read_only: "Read Only",
-};
-
-function TeamMembersCard() {
-  const { data: profiles = [], isLoading } = useProfiles();
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Team Members</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Team Members</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="divide-y divide-border">
-          {profiles.map((profile) => (
-            <div
-              key={profile.id}
-              className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-            >
-              <EntityAvatar
-                name={profile.full_name ?? "?"}
-                type="contact"
-                size="sm"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">
-                  {profile.full_name ?? "Unknown"}
-                </p>
-              </div>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                  ROLE_BADGE_CLASSES[profile.role] ?? ROLE_BADGE_CLASSES.user,
-                )}
-              >
-                {ROLE_LABELS[profile.role] ?? "User"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function RolesCard() {
-  const roles = [
-    {
-      name: "Super Admin",
-      icon: Shield,
-      description:
-        "Full access to all features including user management, settings, and all data. Can invite team members and configure pipeline.",
-      color: "text-amber-600 bg-amber-50",
-    },
-    {
-      name: "User",
-      icon: Users,
-      description:
-        "Can create, edit, and manage deals, contacts, companies, and activities. Cannot access settings or manage users.",
-      color: "text-blue-600 bg-blue-50",
-    },
-    {
-      name: "Read Only",
-      icon: Eye,
-      description:
-        "View-only access to all data. Cannot create, edit, or delete any records. Can export data.",
-      color: "text-slate-600 bg-slate-50",
-    },
-  ];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Permissions & Roles</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {roles.map(({ name, icon: Icon, description, color }) => (
-          <div key={name} className="flex gap-3">
-            <span
-              className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                color,
-              )}
-            >
-              <Icon className="size-4" />
-            </span>
-            <div>
-              <p className="text-sm font-medium">{name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {description}
-              </p>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
+const TABS = [
+  { value: "users", label: "User Management", icon: Users },
+  { value: "pipeline", label: "Pipeline Stages", icon: GitBranch },
+  { value: "deal-fields", label: "Deal Fields", icon: FileText },
+  { value: "contact-fields", label: "Contact Fields", icon: Contact },
+  { value: "company-fields", label: "Company Fields", icon: Building2 },
+] as const;
 
 export default function SettingsPage() {
   const isAdmin = useIsAdmin();
@@ -147,7 +37,7 @@ export default function SettingsPage() {
 
   if (!isAdmin) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 p-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-full max-w-md" />
         <Skeleton className="h-64 w-full" />
@@ -156,40 +46,50 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Settings"
-        description="Manage pipeline stages, custom fields, and workspace configuration"
-      />
+    <div className="-m-6 md:-m-7 min-h-[calc(100vh-4rem)]">
+      <Tabs defaultValue="users" orientation="vertical">
+        <div className="flex min-h-[calc(100vh-4rem)]">
+          {/* Vertical sidebar nav */}
+          <div className="w-56 shrink-0 border-r border-border bg-muted/30">
+            <div className="flex items-center gap-2 px-5 py-5 border-b border-border">
+              <Settings className="size-5 text-muted-foreground" />
+              <h1 className="text-base font-semibold tracking-tight">Settings</h1>
+            </div>
+            <TabsList
+              variant="line"
+              className="flex w-full flex-col items-stretch gap-0.5 bg-transparent p-2"
+            >
+              {TABS.map(({ value, label, icon: Icon }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="justify-start gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-active:bg-background data-active:text-foreground data-active:shadow-sm data-active:after:opacity-0"
+                >
+                  <Icon className="size-4" />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
-      {/* Team + Roles cards */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TeamMembersCard />
-        <RolesCard />
-      </div>
-
-      {/* Field configuration tabs */}
-      <Tabs defaultValue="pipeline">
-        <TabsList>
-          <TabsTrigger value="pipeline">Pipeline Stages</TabsTrigger>
-          <TabsTrigger value="deal-fields">Deal Fields</TabsTrigger>
-          <TabsTrigger value="contact-fields">Contact Fields</TabsTrigger>
-          <TabsTrigger value="company-fields">Company Fields</TabsTrigger>
-        </TabsList>
-
-        <div className="mt-6">
-          <TabsContent value="pipeline" className="mt-0">
-            <PipelineStagesTab />
-          </TabsContent>
-          <TabsContent value="deal-fields" className="mt-0">
-            <FieldManagerTab entityType="deal" />
-          </TabsContent>
-          <TabsContent value="contact-fields" className="mt-0">
-            <FieldManagerTab entityType="contact" />
-          </TabsContent>
-          <TabsContent value="company-fields" className="mt-0">
-            <FieldManagerTab entityType="company" />
-          </TabsContent>
+          {/* Content area */}
+          <div className="flex-1 overflow-y-auto">
+            <TabsContent value="users" className="mt-0 h-full">
+              <UserManagementTab />
+            </TabsContent>
+            <TabsContent value="pipeline" className="mt-0 h-full">
+              <PipelineStagesTab />
+            </TabsContent>
+            <TabsContent value="deal-fields" className="mt-0 h-full">
+              <FieldManagerTab entityType="deal" />
+            </TabsContent>
+            <TabsContent value="contact-fields" className="mt-0 h-full">
+              <FieldManagerTab entityType="contact" />
+            </TabsContent>
+            <TabsContent value="company-fields" className="mt-0 h-full">
+              <FieldManagerTab entityType="company" />
+            </TabsContent>
+          </div>
         </div>
       </Tabs>
     </div>

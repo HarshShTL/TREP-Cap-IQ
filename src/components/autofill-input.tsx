@@ -5,9 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/types/database";
 
-interface AutofillInputProps extends React.ComponentProps<"input"> {
-  table: string;
+type TableName = keyof Database["public"]["Tables"];
+
+interface AutofillInputProps extends Omit<React.ComponentProps<"input">, "onSelect"> {
+  table: TableName;
   column: string;
   onSelect?: (value: string) => void;
 }

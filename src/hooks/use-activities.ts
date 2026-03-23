@@ -33,7 +33,7 @@ export function useActivities(params: ActivitiesParams = {}) {
 
       if (dealId) q = q.eq("deal_id", dealId);
       if (contactId) q = q.eq("contact_id", contactId);
-      if (type) q = q.eq("type", type);
+      if (type) q = q.eq("type", type as "Email" | "Call" | "Meeting" | "Note" | "NDA" | "Document" | "AI Update");
       if (search) {
         q = q.or(`subject.ilike.%${search}%,body.ilike.%${search}%`);
       }

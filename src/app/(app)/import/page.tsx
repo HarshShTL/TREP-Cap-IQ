@@ -375,7 +375,7 @@ export default function ImportPage() {
                   </div>
                   <Select
                     value={m.targetField ?? "__skip__"}
-                    onValueChange={(v) => {
+                    onValueChange={(v: string) => {
                       const next = [...mappings];
                       next[i] = { ...m, targetField: v === "__skip__" ? null : v };
                       setMappings(next);
@@ -580,9 +580,9 @@ export default function ImportPage() {
                   >
                     Import Another File
                   </Button>
-                  <Button asChild>
-                    <a href={`/${entityType}`}>View {entityType}</a>
-                  </Button>
+                  <a href={`/${entityType}`}>
+                    <Button variant="outline">View {entityType}</Button>
+                  </a>
                 </div>
               </div>
             )}

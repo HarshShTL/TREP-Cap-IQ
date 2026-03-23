@@ -108,8 +108,10 @@ export function CompaniesTable({
     { key: "name", label: "Name", sortable: true },
     { key: "company_type", label: "Type", sortable: true },
     { key: "industry", label: "Industry", sortable: true },
-    { key: "hq_city", label: "HQ City", sortable: true },
     { key: "aum", label: "AUM", sortable: true },
+    { key: "hq_city", label: "HQ Location", sortable: true },
+    { key: "capital_type", label: "Capital Type", sortable: true },
+    { key: "investment_strategy", label: "Strategy", sortable: true },
     { key: "website", label: "Website", sortable: false },
   ];
 
@@ -202,13 +204,19 @@ export function CompaniesTable({
                 <TableCell className="py-3.5 px-4 text-sm">
                   {company.industry ?? "—"}
                 </TableCell>
+                <TableCell className="py-3.5 px-4 text-sm tabular-nums">
+                  {company.aum != null ? formatCurrency(company.aum) : "—"}
+                </TableCell>
                 <TableCell className="py-3.5 px-4 text-sm">
                   {[company.hq_city, company.hq_state]
                     .filter(Boolean)
                     .join(", ") || "—"}
                 </TableCell>
-                <TableCell className="py-3.5 px-4 text-sm tabular-nums">
-                  {company.aum != null ? formatCurrency(company.aum) : "—"}
+                <TableCell className="py-3.5 px-4 text-sm">
+                  {company.capital_type ?? "—"}
+                </TableCell>
+                <TableCell className="py-3.5 px-4 text-sm">
+                  {company.investment_strategy ?? "—"}
                 </TableCell>
                 <TableCell className="py-3.5 px-4">
                   {company.website ? (

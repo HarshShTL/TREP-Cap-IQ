@@ -311,7 +311,7 @@ export function AiChatbot() {
       if (!selected.has(`activity_${i}`)) continue;
       const a = activityCreates[i];
       const { error } = await supabase.from("activities").insert({
-        type: a.type,
+        type: a.type as "Email" | "Call" | "Meeting" | "Note" | "NDA" | "Document" | "AI Update",
         subject: a.subject,
         body: a.body ?? null,
         deal_id: a.deal_id ?? null,

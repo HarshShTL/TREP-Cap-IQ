@@ -269,7 +269,7 @@ export default function DashboardPage() {
 
                   return (
                     <li key={activity.id} className="flex items-start gap-3 px-5 py-3.5">
-                      <ActivityTypeDot type={activity.activity_type} />
+                      <ActivityTypeDot type={activity.type} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {contactName && (
