@@ -40,33 +40,37 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // TODO: REVERT AFTER SHOWCASE
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // TODO: REVERT AFTER SHOWCASE
+  // if (pathname === "/login" && user) {
+  //   return NextResponse.redirect(new URL("/", request.url));
+  // }
 
-  if (isProtectedPath(pathname) && !user) {
-    const redirectUrl = new URL("/login", request.url);
-    redirectUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
+  // TODO: REVERT AFTER SHOWCASE
+  // if (isProtectedPath(pathname) && !user) {
+  //   const redirectUrl = new URL("/login", request.url);
+  //   redirectUrl.searchParams.set("next", pathname);
+  //   return NextResponse.redirect(redirectUrl);
+  // }
 
+  // TODO: REVERT AFTER SHOWCASE
   // Role-based access control for restricted routes
-  if (user) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-
-    if (pathname.startsWith('/settings') && profile?.role !== 'super_admin') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    if (pathname.startsWith('/import') && profile?.role === 'read_only') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-  }
+  // if (user) {
+  //   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  //
+  //   if (pathname.startsWith('/settings') && profile?.role !== 'super_admin') {
+  //     return NextResponse.redirect(new URL('/', request.url));
+  //   }
+  //   if (pathname.startsWith('/import') && profile?.role === 'read_only') {
+  //     return NextResponse.redirect(new URL('/', request.url));
+  //   }
+  // }
 
   return supabaseResponse;
 }
