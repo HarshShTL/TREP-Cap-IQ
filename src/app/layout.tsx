@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from '@vercel/analytics/next';
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en" className={cn("theme", inter.variable)} suppressHydrationWarning>
       <body className={cn("min-h-screen font-sans antialiased")}>
         <AppProviders>{children}</AppProviders>
+        <Analytics />
       </body>
     </html>
   );
