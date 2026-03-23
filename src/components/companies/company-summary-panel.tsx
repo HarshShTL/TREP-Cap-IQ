@@ -244,7 +244,7 @@ export function CompanySummaryPanel({ companyId }: CompanySummaryPanelProps) {
               onSave={async (v) => {
                 await updateCompany.mutateAsync({
                   id: companyId,
-                  custom_fields: { ...company.custom_fields, [field.key]: v || null },
+                  custom_fields: { ...company.custom_fields, [field.key]: v || null } as import("@/types/database").Json,
                 });
               }}
             />

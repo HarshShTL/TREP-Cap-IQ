@@ -14,7 +14,7 @@ export function useProfile() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("id, role, full_name, avatar_url")
+        .select("id, role, full_name")
         .eq("id", user.id)
         .maybeSingle();
       return data as Profile | null;
@@ -34,7 +34,7 @@ export function useProfiles() {
       const supabase = createClient();
       const { data } = await supabase
         .from("profiles")
-        .select("id, role, full_name, avatar_url");
+        .select("id, role, full_name");
       return (data ?? []) as Profile[];
     },
     staleTime: 5 * 60 * 1000,

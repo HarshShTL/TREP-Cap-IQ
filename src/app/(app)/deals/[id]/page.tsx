@@ -288,7 +288,7 @@ function AttachmentsPanel({ dealId }: { dealId: string }) {
               >
                 <p className="text-xs font-medium truncate text-blue-600 hover:underline">{f.filename}</p>
                 <p className="text-[10px] text-muted-foreground">
-                  {formatFileSize(f.size)} &middot; {formatDate(f.created_at)}
+                  {formatFileSize(f.size_bytes)} &middot; {formatDate(f.created_at)}
                 </p>
               </button>
               <button

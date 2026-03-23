@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { FileRecord } from "@/types";
+import type { FileRecord, EntityType } from "@/types";
 
 const STORAGE_BUCKET = "files";
 
@@ -12,6 +12,13 @@ interface FilesParams {
   dealId?: string;
   contactId?: string;
   companyId?: string;
+}
+
+function getEntityInfo(params: FilesParams): { entityId: string; entityType: EntityType } | null {
+  if (params.dealId) return { entityId: params.dealId, entityType: "deal" };
+  if (params.contactId) return { entityId: params.contactId, entityType: "contact" };
+  if (params.companyId) return { entityId: params.companyId, entityType: "company" };
+  return null;
 }
 
 function getQueryKey(params: FilesParams) {
@@ -25,17 +32,16 @@ export function useFiles(params: FilesParams) {
   return useQuery({
     queryKey: getQueryKey(params),
     queryFn: async (): Promise<FileRecord[]> => {
+      const entity = getEntityInfo(params);
+      if (!entity) return [];
       const supabase = createClient();
-      let q = supabase
+      const { data, error } = await supabase
         .from("files")
         .select("*")
+        .eq("entity_id", entity.entityId)
+        .eq("entity_type", entity.entityType)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
-
-      if (params.dealId) q = q.eq("deal_id", params.dealId);
-      else if (params.contactId) q = q.eq("contact_id", params.contactId);
-      else if (params.companyId) q = q.eq("company_id", params.companyId);
-
-      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as FileRecord[];
     },
@@ -54,15 +60,12 @@ export function useUploadFile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ file, dealId, contactId, companyId }: UploadFileParams) => {
-      if (!dealId && !contactId && !companyId) {
+      const entity = getEntityInfo({ dealId, contactId, companyId });
+      if (!entity) {
         throw new Error("At least one of dealId, contactId, or companyId is required");
       }
       const supabase = createClient();
-      const folder = dealId
-        ? `deal/${dealId}`
-        : contactId
-        ? `contact/${contactId}`
-        : `company/${companyId}`;
+      const folder = `${entity.entityType}/${entity.entityId}`;
       const storageKey = `${folder}/${crypto.randomUUID()}_${file.name}`;
 
       const { error: uploadError } = await supabase.storage
@@ -73,11 +76,11 @@ export function useUploadFile() {
       const { data, error } = await supabase
         .from("files")
         .insert({
-          deal_id: dealId ?? null,
-          contact_id: contactId ?? null,
-          company_id: companyId ?? null,
+          entity_id: entity.entityId,
+          entity_type: entity.entityType,
           filename: file.name,
-          size: file.size,
+          size_bytes: file.size,
+          mime_type: file.type || null,
           storage_key: storageKey,
         })
         .select("*")
@@ -85,7 +88,7 @@ export function useUploadFile() {
       if (error) throw error;
       return data as FileRecord;
     },
-    onSuccess: (data, { dealId, contactId, companyId }) => {
+    onSuccess: (_, { dealId, contactId, companyId }) => {
       queryClient.invalidateQueries({ queryKey: getQueryKey({ dealId, contactId, companyId }) });
       toast.success("File uploaded");
     },

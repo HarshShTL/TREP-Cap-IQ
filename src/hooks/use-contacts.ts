@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { Contact } from "@/types";
+import type { Contact, ContactInsert, ContactUpdate } from "@/types";
 
 const CONTACTS_SELECT =
   "id, first_name, last_name, email, phone, job_title, company_name, company_id, lead_status, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, relationship, next_steps, database_source, email_verification, trep_capital_type_prior_outreach, trep_deal_prior_outreach, contact_owner, street_address, city, state, postal_code, country, time_zone, industry, website, last_interaction_date, custom_fields, deleted_at, updated_at, created_at";
@@ -119,9 +119,7 @@ export function useContact(id: string) {
 export function useCreateContact() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      contact: Omit<Contact, "id" | "deleted_at" | "updated_at" | "created_at" | "search_vector">
-    ) => {
+    mutationFn: async (contact: ContactInsert) => {
       const supabase = createClient();
 
       let company_id = contact.company_id;
@@ -168,7 +166,7 @@ export function useUpdateContact() {
     mutationFn: async ({
       id,
       ...fields
-    }: { id: string } & Partial<Contact>) => {
+    }: { id: string } & ContactUpdate) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("contacts")

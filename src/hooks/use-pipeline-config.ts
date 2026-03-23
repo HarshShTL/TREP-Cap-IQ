@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
 import { DEAL_STAGES } from "@/lib/constants";
 import type { PipelineConfig, PipelineStage } from "@/types";
+import type { Json } from "@/types/database";
 
 export function usePipelineConfig() {
   return useQuery({
@@ -42,8 +43,8 @@ export function useUpdatePipelineConfig() {
         .limit(1)
         .maybeSingle();
       const payload = existing?.id
-        ? { id: existing.id, stages }
-        : { stages };
+        ? { id: existing.id, stages: stages as unknown as Json }
+        : { stages: stages as unknown as Json };
       const { error } = await supabase
         .from("pipeline_config")
         .upsert(payload);

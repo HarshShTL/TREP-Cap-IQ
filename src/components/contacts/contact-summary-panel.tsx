@@ -458,7 +458,7 @@ export function ContactSummaryPanel({ contactId }: ContactSummaryPanelProps) {
               onSave={async (v) => {
                 await updateContact.mutateAsync({
                   id: contactId,
-                  custom_fields: { ...contact.custom_fields, [field.key]: v || null },
+                  custom_fields: { ...contact.custom_fields, [field.key]: v || null } as import("@/types/database").Json,
                 });
               }}
             />

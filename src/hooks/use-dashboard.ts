@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import type { Deal, Activity } from "@/types";
+import type { Deal, ActivityWithRelations } from "@/types";
 
 const EXCLUDED_STAGES = "(Closed,Pass)";
 
@@ -39,7 +39,7 @@ export function useDashboardStats() {
             .from("contacts")
             .select("*", { count: "exact", head: true })
             .is("deleted_at", null)
-            .in("lead_status", ["New", "Open", "Attempted"]),
+            .in("lead_status", ["Need to Call", "Left VM", "Call Scheduled"]),
         ]);
 
       const totalAmount = (amountsRes.data ?? []).reduce(
@@ -139,7 +139,7 @@ export function useRecentActivities() {
         )
         .order("created_at", { ascending: false })
         .limit(8);
-      return (data ?? []) as unknown as Activity[];
+      return (data ?? []) as unknown as ActivityWithRelations[];
     },
   });
 }

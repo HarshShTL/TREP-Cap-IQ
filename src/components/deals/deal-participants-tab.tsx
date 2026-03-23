@@ -38,7 +38,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, PARTICIPANT_ROLES, PARTICIPANT_STATUSES, PARTICIPANT_STATUS_BADGE_CLASSES } from "@/lib/constants";
-import type { Contact } from "@/types";
+import type { Contact, ParticipantRole, ParticipantStatus } from "@/types";
 
 function ContactSearchResult({
   contact,
@@ -78,8 +78,8 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
   const [results, setResults] = React.useState<Contact[]>([]);
   const [searching, setSearching] = React.useState(false);
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
-  const [role, setRole] = React.useState("Lead Investor");
-  const [status, setStatus] = React.useState("Introduced");
+  const [role, setRole] = React.useState<ParticipantRole>("Lead Investor");
+  const [status, setStatus] = React.useState<ParticipantStatus>("Introduced");
   const debouncedSearch = useDebounce(search, 300);
 
   React.useEffect(() => {
@@ -124,9 +124,6 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
       contact_id: selectedContact.id,
       role,
       status,
-      commitment_amount: null,
-      nda_sent_date: null,
-      nda_signed_date: null,
     });
     onOpenChange(false);
     setSearch("");
@@ -167,7 +164,7 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium">Role</label>
-            <Select value={role} onValueChange={setRole}>
+            <Select value={role} onValueChange={(v) => setRole(v as ParticipantRole)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -182,7 +179,7 @@ function AddParticipantDialog({ open, onOpenChange, dealId }: AddParticipantDial
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium">Status</label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setStatus(v as ParticipantStatus)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

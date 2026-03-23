@@ -41,8 +41,8 @@ export function CustomViewsSidebar({
     await createView.mutateAsync({
       name: saveName.trim(),
       entity_type: entityType,
-      filters: currentFilters ?? null,
-      columns: null,
+      filters: (currentFilters ?? null) as import("@/types/database").Json | undefined,
+      columns: null as import("@/types/database").Json | undefined,
     });
     setSaveName("");
     setSaveOpen(false);

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { AutofillInput } from "@/components/autofill-input";
 import { useCreateDeal } from "@/hooks/use-deals";
+import type { DealInsert } from "@/types";
 import { useProfiles } from "@/hooks/use-profile";
 import {
   DEAL_STAGES,
@@ -71,20 +72,21 @@ export function NewDealDialog({
   });
 
   const onSubmit = (values: FormValues) => {
+    const deal: DealInsert = {
+      name: values.name,
+      stage: (values.stage || undefined) as DealInsert["stage"],
+      amount: values.amount ?? undefined,
+      deal_type: (values.deal_type || undefined) as DealInsert["deal_type"],
+      priority: (values.priority || undefined) as DealInsert["priority"],
+      location: values.location || undefined,
+      asset_class: (values.asset_class || undefined) as DealInsert["asset_class"],
+      description: values.description || undefined,
+      expected_close_date: values.expected_close_date || undefined,
+      deal_owner: values.deal_owner || undefined,
+      deal_collaborator: values.deal_collaborator || undefined,
+    };
     createDeal.mutate(
-      {
-        ...values,
-        amount: values.amount ?? null,
-        deal_type: values.deal_type ?? null,
-        priority: values.priority ?? null,
-        location: values.location ?? null,
-        asset_class: values.asset_class ?? null,
-        description: values.description ?? null,
-        expected_close_date: values.expected_close_date ?? null,
-        deal_owner: values.deal_owner ?? null,
-        deal_collaborator: values.deal_collaborator ?? null,
-        custom_fields: null,
-      },
+      deal,
       {
         onSuccess: () => {
           reset();

@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateCompany } from "@/hooks/use-companies";
+import type { CompanyInsert } from "@/types";
 import {
   COMPANY_TYPES,
   ASSET_CLASSES,
@@ -102,26 +103,18 @@ export function NewCompanyDialog({ open, onOpenChange }: NewCompanyDialogProps) 
   const onSubmit = async (data: FormData) => {
     await createCompany.mutateAsync({
       name: data.name,
-      website: data.website || null,
-      domain: null,
-      company_type: data.company_type || null,
-      industry: data.industry || null,
-      hq_address: null,
-      hq_city: data.hq_city || null,
-      hq_state: data.hq_state || null,
-      hq_country: data.hq_country || null,
-      capital_type: data.capital_type || null,
-      family_office: null,
-      institutional: null,
-      retail: null,
-      indirect: null,
-      ownership: null,
-      investment_strategy: data.investment_strategy || null,
-      region: data.region || null,
-      asset_class: data.asset_class || null,
-      aum: data.aum ? Number(data.aum) : null,
-      notes: data.notes || null,
-      custom_fields: null,
+      website: data.website || undefined,
+      company_type: (data.company_type || undefined) as CompanyInsert["company_type"],
+      industry: data.industry || undefined,
+      hq_city: data.hq_city || undefined,
+      hq_state: data.hq_state || undefined,
+      hq_country: data.hq_country || undefined,
+      capital_type: (data.capital_type || undefined) as CompanyInsert["capital_type"],
+      investment_strategy: (data.investment_strategy || undefined) as CompanyInsert["investment_strategy"],
+      region: (data.region || undefined) as CompanyInsert["region"],
+      asset_class: (data.asset_class || undefined) as CompanyInsert["asset_class"],
+      aum: data.aum ? Number(data.aum) : undefined,
+      notes: data.notes || undefined,
     });
     reset();
     onOpenChange(false);

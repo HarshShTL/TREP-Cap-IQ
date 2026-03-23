@@ -200,8 +200,8 @@ export default function ContactsPage() {
     await createView.mutateAsync({
       name: newViewName.trim(),
       entity_type: "contact",
-      filters: { search: debouncedSearch, sortBy, sortAsc, filters },
-      columns: visibleColumns,
+      filters: { search: debouncedSearch, sortBy, sortAsc, filters } as unknown as import("@/types/database").Json,
+      columns: visibleColumns as unknown as import("@/types/database").Json,
     });
     setNewViewName("");
     setCreateViewOpen(false);

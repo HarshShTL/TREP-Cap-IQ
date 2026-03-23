@@ -177,7 +177,7 @@ export function DealSummaryPanel({ dealId }: DealSummaryPanelProps) {
               onSave={async (v) => {
                 await updateDeal.mutateAsync({
                   id: dealId,
-                  custom_fields: { ...deal.custom_fields, [field.key]: v || null },
+                  custom_fields: { ...deal.custom_fields, [field.key]: v || null } as import("@/types/database").Json,
                 });
               }}
             />

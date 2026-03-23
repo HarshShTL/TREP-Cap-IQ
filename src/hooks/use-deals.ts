@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { Deal } from "@/types";
+import type { Deal, DealInsert, DealUpdate } from "@/types";
 
 const DEALS_SELECT =
   "id, name, stage, amount, deal_type, priority, location, asset_class, description, expected_close_date, deal_owner, deal_collaborator, custom_fields, deleted_at, updated_at, created_at";
@@ -45,7 +45,7 @@ export function useDeal(id: string) {
 export function useCreateDeal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (deal: Omit<Deal, "id" | "deleted_at" | "updated_at" | "created_at">) => {
+    mutationFn: async (deal: DealInsert) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("deals")
@@ -73,7 +73,7 @@ export function useUpdateDeal() {
     mutationFn: async ({
       id,
       ...fields
-    }: { id: string } & Partial<Deal>) => {
+    }: { id: string } & DealUpdate) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("deals")

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { AutofillInput } from "@/components/autofill-input";
 import { useCreateContact } from "@/hooks/use-contacts";
+import type { ContactInsert } from "@/types";
 import { useProfiles } from "@/hooks/use-profile";
 import {
   LEAD_STATUSES,
@@ -76,43 +77,27 @@ export function NewContactDialog({ open, onOpenChange }: NewContactDialogProps) 
   });
 
   const onSubmit = (values: FormValues) => {
+    const contact: ContactInsert = {
+      first_name: values.first_name,
+      last_name: values.last_name,
+      email: values.email || undefined,
+      phone: values.phone || undefined,
+      job_title: values.job_title || undefined,
+      company_name: values.company_name || undefined,
+      lead_status: (values.lead_status || undefined) as ContactInsert["lead_status"],
+      capital_type: (values.capital_type || undefined) as ContactInsert["capital_type"],
+      investment_strategy: (values.investment_strategy || undefined) as ContactInsert["investment_strategy"],
+      region: (values.region || undefined) as ContactInsert["region"],
+      asset_class: (values.asset_class || undefined) as ContactInsert["asset_class"],
+      relationship: (values.relationship || undefined) as ContactInsert["relationship"],
+      database_source: (values.database_source || undefined) as ContactInsert["database_source"],
+      next_steps: values.next_steps || undefined,
+      contact_owner: values.contact_owner || undefined,
+      city: values.city || undefined,
+      state: values.state || undefined,
+    };
     createContact.mutate(
-      {
-        first_name: values.first_name,
-        last_name: values.last_name,
-        email: values.email || null,
-        phone: values.phone || null,
-        job_title: values.job_title || null,
-        company_name: values.company_name || null,
-        company_id: null,
-        lead_status: values.lead_status || null,
-        capital_type: values.capital_type || null,
-        family_office: null,
-        institutional: null,
-        retail: null,
-        indirect: null,
-        ownership: null,
-        investment_strategy: values.investment_strategy || null,
-        region: values.region || null,
-        asset_class: values.asset_class || null,
-        relationship: values.relationship || null,
-        next_steps: values.next_steps || null,
-        database_source: values.database_source || null,
-        email_verification: null,
-        trep_capital_type_prior_outreach: null,
-        trep_deal_prior_outreach: null,
-        contact_owner: values.contact_owner || null,
-        street_address: null,
-        city: values.city || null,
-        state: values.state || null,
-        postal_code: null,
-        country: null,
-        time_zone: null,
-        industry: null,
-        website: null,
-        last_interaction_date: null,
-        custom_fields: null,
-      },
+      contact,
       {
         onSuccess: () => {
           reset();

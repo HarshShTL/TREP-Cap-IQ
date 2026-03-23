@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { Activity } from "@/types";
+import type { ActivityInsert, ActivityUpdate, ActivityWithRelations } from "@/types";
 
 const ACTIVITIES_SELECT =
   "id, type, subject, body, date, deal_id, contact_id, ai_generated, created_at, deals(id, name), contacts(id, first_name, last_name, company_name)";
@@ -23,7 +23,7 @@ export function useActivities(params: ActivitiesParams = {}) {
   const { dealId, contactId, type, search = "", cursor, limit = 50 } = params;
   return useQuery({
     queryKey: queryKeys.activities.list(params),
-    queryFn: async (): Promise<Activity[]> => {
+    queryFn: async (): Promise<ActivityWithRelations[]> => {
       const supabase = createClient();
       let q = supabase
         .from("activities")
@@ -41,7 +41,7 @@ export function useActivities(params: ActivitiesParams = {}) {
 
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as Activity[];
+      return (data ?? []) as unknown as ActivityWithRelations[];
     },
   });
 }
@@ -49,9 +49,7 @@ export function useActivities(params: ActivitiesParams = {}) {
 export function useCreateActivity() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      activity: Omit<Activity, "id" | "created_at" | "updated_at" | "deals" | "contacts">
-    ) => {
+    mutationFn: async (activity: ActivityInsert) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("activities")
@@ -59,7 +57,7 @@ export function useCreateActivity() {
         .select(ACTIVITIES_SELECT)
         .single();
       if (error) throw error;
-      return data as unknown as Activity;
+      return data as unknown as ActivityWithRelations;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
@@ -76,7 +74,7 @@ export function useUpdateActivity() {
     mutationFn: async ({
       id,
       ...fields
-    }: { id: string } & Partial<Activity>) => {
+    }: { id: string } & ActivityUpdate) => {
       const supabase = createClient();
       const { error } = await supabase
         .from("activities")

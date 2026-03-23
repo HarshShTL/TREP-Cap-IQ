@@ -38,9 +38,10 @@ export function useUpdateSchemaConfig() {
         .eq("entity_type", entityType)
         .maybeSingle();
 
+      const fd = fieldDefinitions as unknown as import("@/types/database").Json;
       const payload = existing?.id
-        ? { id: existing.id, entity_type: entityType, field_definitions: fieldDefinitions }
-        : { entity_type: entityType, field_definitions: fieldDefinitions };
+        ? { id: existing.id, entity_type: entityType, field_definitions: fd }
+        : { entity_type: entityType, field_definitions: fd };
       const { error } = await supabase.from("schema_config").upsert(payload);
       if (error) throw error;
     },

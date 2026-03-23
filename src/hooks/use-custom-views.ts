@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { CustomView, EntityType } from "@/types";
+import type { CustomView, CustomViewInsert, EntityType } from "@/types";
 
 export function useCustomViews(entityType: EntityType) {
   return useQuery({
@@ -25,7 +25,7 @@ export function useCustomViews(entityType: EntityType) {
 export function useCreateView() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (view: Omit<CustomView, "id" | "created_at">) => {
+    mutationFn: async (view: CustomViewInsert) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("custom_views")

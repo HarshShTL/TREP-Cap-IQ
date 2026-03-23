@@ -77,12 +77,14 @@ const ENTITY_LABELS: Record<EntityType, string> = {
   deal: "Deal",
   contact: "Contact",
   company: "Company",
+  activity: "Activity",
 };
 
 const ENTITY_DESCRIPTIONS: Record<EntityType, string> = {
   deal: "Manage fields that appear on deal records. Drag to reorder.",
   contact: "Manage fields that appear on contact records. Drag to reorder.",
   company: "Manage fields that appear on company records. Drag to reorder.",
+  activity: "Manage fields that appear on activity records. Drag to reorder.",
 };
 
 /* ─── Field Dialog (Add / Edit) ───────────────────────────────────────────── */

@@ -117,7 +117,7 @@ export function DealRightPanel({ dealId }: DealRightPanelProps) {
                   <File className="size-4 shrink-0 text-muted-foreground" />
                   <span className="truncate">{f.filename}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatFileSize(f.size)}
+                    {formatFileSize(f.size_bytes)}
                   </span>
                 </div>
                 <Button

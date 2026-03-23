@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useCreateActivity } from "@/hooks/use-activities";
 import { ACTIVITY_TYPES } from "@/lib/constants";
+import type { ActivityType } from "@/types";
 
 const schema = z.object({
   type: z.string().min(1),
@@ -67,12 +68,12 @@ export function LogActivityDialog({
 
   const onSubmit = async (data: FormData) => {
     await createActivity.mutateAsync({
-      type: data.type,
+      type: data.type as ActivityType,
       subject: data.subject,
-      body: data.body || null,
-      date: data.date || null,
-      deal_id: dealId ?? null,
-      contact_id: contactId ?? null,
+      body: data.body || undefined,
+      date: data.date || undefined,
+      deal_id: dealId,
+      contact_id: contactId,
     });
     reset();
     onOpenChange(false);

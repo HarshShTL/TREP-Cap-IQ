@@ -4,7 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { DealParticipant } from "@/types";
+import type {
+  DealParticipantInsert,
+  DealParticipantUpdate,
+  DealParticipantWithRelations,
+} from "@/types";
 
 const PARTICIPANT_SELECT =
   "id, deal_id, contact_id, role, status, commitment_amount, nda_sent_date, nda_signed_date, contacts(id, first_name, last_name, email, job_title, company_name)";
@@ -12,7 +16,7 @@ const PARTICIPANT_SELECT =
 export function useDealParticipants(dealId: string) {
   return useQuery({
     queryKey: queryKeys.dealParticipants(dealId),
-    queryFn: async (): Promise<DealParticipant[]> => {
+    queryFn: async (): Promise<DealParticipantWithRelations[]> => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("deal_participants")
@@ -20,7 +24,7 @@ export function useDealParticipants(dealId: string) {
         .eq("deal_id", dealId)
         .order("created_at" as never, { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as DealParticipant[];
+      return (data ?? []) as unknown as DealParticipantWithRelations[];
     },
     enabled: !!dealId,
   });
@@ -29,7 +33,7 @@ export function useDealParticipants(dealId: string) {
 export function useContactParticipants(contactId: string) {
   return useQuery({
     queryKey: queryKeys.contactParticipants(contactId),
-    queryFn: async (): Promise<DealParticipant[]> => {
+    queryFn: async (): Promise<DealParticipantWithRelations[]> => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("deal_participants")
@@ -38,7 +42,7 @@ export function useContactParticipants(contactId: string) {
         )
         .eq("contact_id", contactId);
       if (error) throw error;
-      return (data ?? []) as unknown as DealParticipant[];
+      return (data ?? []) as unknown as DealParticipantWithRelations[];
     },
     enabled: !!contactId,
   });
@@ -47,9 +51,7 @@ export function useContactParticipants(contactId: string) {
 export function useAddParticipant() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      participant: Omit<DealParticipant, "id" | "contacts" | "deals">
-    ) => {
+    mutationFn: async (participant: DealParticipantInsert) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("deal_participants")
@@ -78,7 +80,7 @@ export function useUpdateParticipant() {
       id,
       dealId,
       ...fields
-    }: { id: string; dealId: string } & Partial<DealParticipant>) => {
+    }: { id: string; dealId: string } & DealParticipantUpdate) => {
       const supabase = createClient();
       const { error } = await supabase
         .from("deal_participants")

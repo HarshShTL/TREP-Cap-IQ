@@ -30,7 +30,7 @@ import { EmptyState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useActivities, useDeleteActivity } from "@/hooks/use-activities";
 import { formatDate } from "@/lib/utils";
-import type { Activity } from "@/types";
+import type { ActivityWithRelations } from "@/types";
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   Call: <Phone className="size-4" />,
@@ -60,7 +60,7 @@ export function ActivityFeed({
   onLogActivity,
 }: ActivityFeedProps) {
   const [cursor, setCursor] = React.useState<string | undefined>();
-  const [allActivities, setAllActivities] = React.useState<Activity[]>([]);
+  const [allActivities, setAllActivities] = React.useState<ActivityWithRelations[]>([]);
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
   const [expanded, setExpanded] = React.useState<Set<string>>(new Set());
   const deleteActivity = useDeleteActivity();
@@ -157,7 +157,7 @@ export function ActivityFeed({
                       <span className="inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs text-muted-foreground">
                         {activity.type}
                       </span>
-                      {(activity as Activity & { ai_generated?: boolean }).ai_generated && (
+                      {activity.ai_generated && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 text-xs font-medium">
                           <Sparkles className="size-3" />
                           AI

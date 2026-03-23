@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
-import type { Company, Contact } from "@/types";
+import type { Company, CompanyInsert, CompanyUpdate, Contact } from "@/types";
 
 const COMPANIES_SELECT =
   "id, name, website, domain, company_type, industry, hq_address, hq_city, hq_state, hq_country, capital_type, family_office, institutional, retail, indirect, ownership, investment_strategy, region, asset_class, aum, notes, custom_fields, deleted_at, updated_at, created_at";
@@ -95,9 +95,7 @@ export function useCompanyContacts(companyId: string) {
 export function useCreateCompany() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      company: Omit<Company, "id" | "deleted_at" | "updated_at" | "created_at">
-    ) => {
+    mutationFn: async (company: CompanyInsert) => {
       const supabase = createClient();
       const domain = company.website ? extractDomain(company.website) : null;
       const { data, error } = await supabase
@@ -122,7 +120,7 @@ export function useUpdateCompany() {
     mutationFn: async ({
       id,
       ...fields
-    }: { id: string } & Partial<Company>) => {
+    }: { id: string } & CompanyUpdate) => {
       const supabase = createClient();
       const updates = { ...fields } as Record<string, unknown>;
       if (fields.website) {
