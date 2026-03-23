@@ -1,14 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-const publicPaths = new Set(["/login", "/auth/callback"]);
+// TODO: REVERT AFTER SHOWCASE
+// const publicPaths = new Set(["/login", "/auth/callback"]);
 
-function isProtectedPath(pathname: string) {
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return false;
-  if (publicPaths.has(pathname)) return false;
-  if (pathname.includes(".")) return false;
-  return true;
-}
+// TODO: REVERT AFTER SHOWCASE
+// function isProtectedPath(pathname: string) {
+//   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return false;
+//   if (publicPaths.has(pathname)) return false;
+//   if (pathname.includes(".")) return false;
+//   return true;
+// }
 
 export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,6 +22,8 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request });
 
+  // TODO: REVERT AFTER SHOWCASE — remove eslint-disable and uncomment supabase usage
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const supabase = createServerClient(url, key, {
     cookieOptions: {
       sameSite: "lax",
@@ -45,6 +49,8 @@ export async function middleware(request: NextRequest) {
   //   data: { user },
   // } = await supabase.auth.getUser();
 
+  // TODO: REVERT AFTER SHOWCASE — remove eslint-disable
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pathname = request.nextUrl.pathname;
 
   // TODO: REVERT AFTER SHOWCASE
